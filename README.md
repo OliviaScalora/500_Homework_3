@@ -14,4 +14,17 @@ Head-on, 3 = Rear-to-rear (Backing), 4 = Angle, 5 = Sideswipe (same dir.), 6 = S
 6) CELL_PHONE: Driver was using cell phone (1= Yes, 0 = No)
 7) SPEEDING: Crash involved speeding car (1 = Yes, 0 = No)
 8) AGGRESSIVE: Crash involved aggressive driving (1 = Yes, 0 = No)
-9) DRIVER1617:
+9) DRIVER1617: Crash involved at least one driver who was 16 or 17 years old (1 = Yes, 0 =No)
+10) DRIVER65PLUS: Crash involved at least one driver who was at least 65 years old (1 = Yes, 0 = No)
+11) AREAKEY: ID of the Census Block Group where the crash took place
+12) PCTBACHMOR: % of individuals 25 years of age or older who have at least a bachelor’s
+degree in the Census Block Group where the crash took place
+13) MEDHHINC: Median household income in the Census Block Group where the crash took place
+
+Even though the original data set has a total of 53,260 car crashes, for the sake of this
+assignment, we remove the 9,896 crash locations which took place in non-residential block
+groups, where median household income and vacancy rates are 0, from the data set. The final
+data set contains the 43,364 crashes that took place in Philadelphia’s residential block groups.
+Here, we will be regressing the binary dependent variable, DRINKING_D, on the following
+binary and continuous predictors: FATAL_OR_M, OVERTURNED, CELL_PHONE, SPEEDING,
+AGGRESSIVE, DRIVER1617, DRIVER65PLUS, PCTBACHMOR, and MEDHHINC.
