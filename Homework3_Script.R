@@ -1,15 +1,13 @@
 #Homework 3
-mydata <- read.csv("https://raw.githubusercontent.com/OliviaScalora/500_Homework_3/main/Logistic Regression Data.csv")
-head(mydata)
 
 #install.packages("packagename")
-install.packages("aod")
-install.packages("ggplot2")
-install.packages("rms")
-install.packages("gmodels")
+#install.packages("aod")
+#install.packages("ggplot2")
+#install.packages("rms")
+#install.packages("gmodels")
 #install.packages("boot")
-install.packages("DAAG")
-install.packages("ROCR")
+#install.packages("DAAG")
+#install.packages("ROCR")
 
 #library(packagename)
 library(aod)
@@ -19,6 +17,33 @@ library(gmodels)
 library(boot)
 library(DAAG)
 library(ROCR)
+library(tidyr)
+library(dplyr)
+library(MASS)
+library(rsq)
+library(kableExtra)
+library(tidyverse) #for ggplot
+#library(sf) #for maps
+#library(cowplot) #for plotgrid
+library(classInt)#for jenks breaks
+library(rgdal)
+library(RColorBrewer)
+library(broom)
+library(maptools)
+library(spdep)
+library(spgwr)
+library(rgeos)
+library(ape)
+library(tmap)
+library(sp)
+library(spatialreg)
+library(kableExtra)
+library(knitr)
+
+
+mydata <- read.csv("https://raw.githubusercontent.com/OliviaScalora/500_Homework_3/main/Logistic Regression Data.csv")
+head(mydata)
+
 #Tabulations
 summary(factor(mydata$DRINKING_D))
 summary(factor(mydata$COLLISION_))
@@ -30,37 +55,114 @@ summary(factor(mydata$AGGRESSIVE))
 summary(factor(mydata$DRIVER1617))
 summary(factor(mydata$DRIVER65PLUS))
 
+#2.a
 #Alternative way of tabulating (and obtaining proportions for each category)
 DRINKING_D.tab <- table(mydata$DRINKING_D)
 prop.table(DRINKING_D.tab)
-COLLISION.tab <- table(mydata$COLLISION_)
-prop.table(COLLISION.tab)
-FATAL_OR_M.tab <- table(mydata$FATAL_OR_M)
-prop.table(FATAL_OR_M.tab)
-OVERTURNED.tab <- table(mydata$OVERTURNED)
-prop.table(OVERTURNED.tab)
-CELL_PHONE.tab <- table(mydata$CELL_PHONE)
-prop.table(CELL_PHONE.tab)
-SPEEDING.tab <- table(mydata$SPEEDING)
-prop.table(SPEEDING.tab)
-AGGRESSIVE.tab <- table(mydata$AGGRESSIVE)
-prop.table(AGGRESSIVE.tab)
-DRIVER1617.tab <- table(mydata$DRIVER1617)
-prop.table(DRIVER1617.tab)
-DRIVER65PLUS.tab <- table(mydata$DRIVER65PLUS)
-prop.table(DRIVER65PLUS.tab)
+#proportion of crashes that involved a drunk driver
+
+#        0           1 
+#0.9426944   0.0573056 
+
+#additional proportion table commands
+#COLLISION.tab <- table(mydata$COLLISION_)
+#prop.table(COLLISION.tab)
+#FATAL_OR_M.tab <- table(mydata$FATAL_OR_M)
+#prop.table(FATAL_OR_M.tab)
+#OVERTURNED.tab <- table(mydata$OVERTURNED)
+#prop.table(OVERTURNED.tab)
+#CELL_PHONE.tab <- table(mydata$CELL_PHONE)
+#prop.table(CELL_PHONE.tab)
+#SPEEDING.tab <- table(mydata$SPEEDING)
+#prop.table(SPEEDING.tab)
+#AGGRESSIVE.tab <- table(mydata$AGGRESSIVE)
+#prop.table(AGGRESSIVE.tab)
+#DRIVER1617.tab <- table(mydata$DRIVER1617)
+#prop.table(DRIVER1617.tab)
+#DRIVER65PLUS.tab <- table(mydata$DRIVER65PLUS)
+#prop.table(DRIVER65PLUS.tab)
 
 
-
+#2.b 
 #Cross-Tabulations
-CrossTable(mydata$COLLISION_, mydata$DRINKING_D, prop.r=FALSE, prop.t=FALSE, prop.chisq=FALSE, chisq=TRUE)
-CrossTable(mydata$FATAL_OR_M, mydata$DRINKING_D, prop.r=FALSE, prop.t=FALSE, prop.chisq=FALSE, chisq=TRUE)
-CrossTable(mydata$OVERTURNED, mydata$DRINKING_D, prop.r=FALSE, prop.t=FALSE, prop.chisq=FALSE, chisq=TRUE)
-CrossTable(mydata$CELL_PHONE, mydata$DRINKING_D, prop.r=FALSE, prop.t=FALSE, prop.chisq=FALSE, chisq=TRUE)
-CrossTable(mydata$SPEEDING, mydata$DRINKING_D, prop.r=FALSE, prop.t=FALSE, prop.chisq=FALSE, chisq=TRUE)
-CrossTable(mydata$AGGRESSIVE, mydata$DRINKING_D, prop.r=FALSE, prop.t=FALSE, prop.chisq=FALSE, chisq=TRUE)
-CrossTable(mydata$DRIVER1617, mydata$DRINKING_D, prop.r=FALSE, prop.t=FALSE, prop.chisq=FALSE, chisq=TRUE)
-CrossTable(mydata$DRIVER65PLUS, mydata$DRINKING_D, prop.r=FALSE, prop.t=FALSE, prop.chisq=FALSE, chisq=TRUE)
+#i.
+#CrossTable(mydata$COLLISION_, mydata$DRINKING_D, prop.r=FALSE, prop.t=FALSE, prop.chisq=FALSE, chisq=TRUE)
+Cross_Fatal<-CrossTable(mydata$FATAL_OR_M, mydata$DRINKING_D, prop.r=FALSE, prop.t=FALSE, prop.chisq=FALSE, chisq=TRUE)
+Cross_Fatal_tbl<-
+  cbind(as.data.frame(Cross_Fatal$t)%>%filter(x==1)%>%rename(N=Freq),
+        as.data.frame(Cross_Fatal[["prop.tbl"]])%>%filter(x==1)%>%rename('%'=Freq,x1=x,y1=y))%>%
+  dplyr::select(-x1,-y1)%>%
+  mutate(Variable='FATAL_OR_M')
+
+#.ii
+Cross_Over<- CrossTable(mydata$OVERTURNED, mydata$DRINKING_D, prop.r=FALSE, prop.t=FALSE, prop.chisq=FALSE, chisq=TRUE)
+Cross_Over_tbl<-
+  cbind(as.data.frame(Cross_Over$t)%>%filter(x==1)%>%rename(N=Freq),
+      as.data.frame(Cross_Over[["prop.tbl"]])%>%filter(x==1)%>%rename('%'=Freq,x1=x,y1=y))%>%
+  dplyr::select(-x1,-y1)%>%
+  mutate(Variable='OVERTURNED')
+
+Cross_Cell<-CrossTable(mydata$CELL_PHONE, mydata$DRINKING_D, prop.r=FALSE, prop.t=FALSE, prop.chisq=FALSE, chisq=TRUE)
+Cross_Cell_tbl<-
+  cbind(as.data.frame(Cross_Cell$t)%>%filter(x==1)%>%rename(N=Freq),
+        as.data.frame(Cross_Cell[["prop.tbl"]])%>%filter(x==1)%>%rename('%'=Freq,x1=x,y1=y))%>%
+  dplyr::select(-x1,-y1)%>%
+  mutate(Variable='CELL_PHONE')
+
+Cross_Speed<-CrossTable(mydata$SPEEDING, mydata$DRINKING_D, prop.r=FALSE, prop.t=FALSE, prop.chisq=FALSE, chisq=TRUE)
+Cross_Speed_tbl<-
+  cbind(as.data.frame(Cross_Speed$t)%>%filter(x==1)%>%rename(N=Freq),
+        as.data.frame(Cross_Speed[["prop.tbl"]])%>%filter(x==1)%>%rename('%'=Freq,x1=x,y1=y))%>%
+  dplyr::select(-x1,-y1)%>%
+  mutate(Variable='SPEEDING')
+
+Cross_Agg<-CrossTable(mydata$AGGRESSIVE, mydata$DRINKING_D, prop.r=FALSE, prop.t=FALSE, prop.chisq=FALSE, chisq=TRUE)
+Cross_Agg_tbl<-
+  cbind(as.data.frame(Cross_Agg$t)%>%filter(x==1)%>%rename(N=Freq),
+        as.data.frame(Cross_Agg[["prop.tbl"]])%>%filter(x==1)%>%rename('%'=Freq,x1=x,y1=y))%>%
+  dplyr::select(-x1,-y1)%>%
+  mutate(Variable='AGGRESSIVE')
+
+Cross_1617<-CrossTable(mydata$DRIVER1617, mydata$DRINKING_D, prop.r=FALSE, prop.t=FALSE, prop.chisq=FALSE, chisq=TRUE)
+Cross_1617_tbl<-
+  cbind(as.data.frame(Cross_1617$t)%>%filter(x==1)%>%rename(N=Freq),
+        as.data.frame(Cross_1617[["prop.tbl"]])%>%filter(x==1)%>%rename('%'=Freq,x1=x,y1=y))%>%
+          dplyr::select(-x1,-y1)%>%
+          mutate(Variable='DRIVER1617')
+
+Cross_65P<-CrossTable(mydata$DRIVER65PLUS, mydata$DRINKING_D, prop.r=FALSE, prop.t=FALSE, prop.chisq=FALSE, chisq=TRUE)
+Cross_65P_tbl<-
+  cbind(as.data.frame(Cross_65P$t)%>%filter(x==1)%>%rename(N=Freq),
+        as.data.frame(Cross_65P[["prop.tbl"]])%>%filter(x==1)%>%rename('%'=Freq,x1=x,y1=y))%>%
+  dplyr::select(-x1,-y1)%>%
+  mutate(Variable='DRIVER65PLUS')
+
+#having a hard time spreading the table to have the same columns as Eugene's example in the homework instructions, 
+#but all of the values we need are here, may just make a table manually
+Cross_Joined<-rbind(Cross_Fatal_tbl,Cross_Over_tbl,Cross_Cell_tbl,Cross_Speed_tbl,Cross_Agg_tbl,Cross_1617_tbl,Cross_65P_tbl)
+
+CrossTable <-
+  Cross_Joined %>%
+  spread(x, Variable)
+  mutate(bind_cols(data.frame(Cost.50 = c(
+    "639000",
+    "7636335",
+    "12091741",
+    "1980000"))),
+    Cost.40 = case_when(Variable == "True_Negative"  ~ (Count * 0.1) * 10000,
+                        Variable == "True_Positive"  ~ (Count *.75 *10000) + (Count *.25 * 42727),
+                        Variable == "False_Negative" ~ Count * 42727,
+                        Variable == "False_Positive" ~ Count * 10000),
+    bind_cols(data.frame(Social.Benefit = c(
+      "Individual re-enters society and becomes a productive member of local economy without government program assistance",
+      "Individual receives job training and career support and has a 75% chance of not recidivating. Community gains a productive member of local economy",
+      "NA",
+      "Individual receives job training and career support and has a 100% chance of not recidivating. Community gains a productive member of local economy"))),
+    bind_cols(data.frame(Description = c(
+      "Individual is predicted to not recidivate and does not in reality.",
+      "Individual is predicted to recidivate and does in reality.",
+      "Individual is predicted to not recidivate but does in reality.",
+      "Individual is predicted to recidivate but does not in reality."))))
 
 #Means by group
 tapply(mydata$PCTBACHMOR, mydata$DRINKING_D, mean) 
