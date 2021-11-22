@@ -42,7 +42,7 @@ library(knitr)
 #install.packages('DT')
 library(DT)
 
-
+#Step 1 -------------------------------------
 mydata <- read.csv("https://raw.githubusercontent.com/OliviaScalora/500_Homework_3/main/Logistic Regression Data.csv")
 head(mydata)
 
@@ -57,6 +57,7 @@ summary(factor(mydata$AGGRESSIVE))
 summary(factor(mydata$DRIVER1617))
 summary(factor(mydata$DRIVER65PLUS))
 
+#Step 2 -------------------------------------
 #2.a
 #Alternative way of tabulating (and obtaining proportions for each category)
 DRINKING_D.tab <- table(mydata$DRINKING_D)
@@ -190,41 +191,31 @@ CrossTable[, c(3,7,1,5,2,6,4,8)]%>%
 #of fatalities for crashes that dont involve drunk drivers
 #Ha - the proportion of fatalities for crashes that involve drunk drivers is different than 
 # the proportion of fatalities for crashes that don't involve drunk drivers.
-
 #added X2 pvalue column to table above ^
 
 #2.c
-
 #i.
 #Means by group
 meanbach<-as.data.frame(t(tapply(mydata$PCTBACHMOR, mydata$DRINKING_D, mean)))%>%mutate(Variable= 'PCTBACHMOR')%>%
   rename('mean.0'='0', 'mean.1'='1')
-
-#        0        1 
 # 16.56986 16.61173 
 
 meanHHinc<-as.data.frame(t(tapply(mydata$MEDHHINC, mydata$DRINKING_D, mean)))%>%mutate(Variable= 'MEDHHINC')%>%
   rename('mean.0'='0', 'mean.1'='1')
-
-#        0        1 
 # 31483.05 31998.75 
 
 #SD by group
 sdbach<-as.data.frame(t(tapply(mydata$PCTBACHMOR, mydata$DRINKING_D, sd)))%>%mutate(Variable= 'PCTBACHMOR')%>%
   rename('sd.0'='0', 'sd.1'='1')
-
-#        0        1 
 # 18.21426 18.72091
 
 sdHHinc<-as.data.frame(t(tapply(mydata$MEDHHINC, mydata$DRINKING_D, sd)))%>%mutate(Variable= 'MEDHHINC')%>%
   rename('sd.0'='0', 'sd.1'='1')
 
 sdHHinc<-sdHHinc%>%spread(sd,x)
-#       0       1 
 # 16930.1 17810.5
 
 #save pvalues for table (step iii). 
-
 ttest_pvalues<-as.data.frame(c((t.test(mydata$PCTBACHMOR~mydata$DRINKING_D)$p.value),
                                (t.test(mydata$MEDHHINC~mydata$DRINKING_D)$p.value)))
 
@@ -254,24 +245,24 @@ MeanSD_tbl[, c(1,6,2,4,3,5,7)]%>%
 #iii.
 #added t-test p-value to table above^^
 
+
 #2.d Using the instructions from Assignment 1, examine the Pearson correlations
 #between all the predictors, (both binary and continuous). Is there evidence
 # of severe multicollinearity here?
-
 
 pred_var <- mydata%>%dplyr::select(DRINKING_D, FATAL_OR_M, OVERTURNED, CELL_PHONE, SPEEDING,
                                    AGGRESSIVE,DRIVER1617,DRIVER65PLUS,PCTBACHMOR,MEDHHINC)
 pcorr <- cor(pred_var, method="pearson")
 
-
 #correlation matrix for markdown
 pcorr%>%kable()%>%kable_material()%>%
   column_spec(1,bold = TRUE)
 
-#Observe that there isnt severe multicollinearity (i.e., no correlations where
+#Observe that there is not severe multicollinearity (i.e., no correlations where
 # r>.8 or r<-.8), so we can include all four predictors in the regression.
 
-
+#Step 3 -------------------------------------
+#everything below was existing code -Olivia
 
 
 #Logistic Regression
