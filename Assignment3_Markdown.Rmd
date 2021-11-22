@@ -70,15 +70,18 @@ head(mydata)
 **a) Explain the problems with using OLS regression when the dependent variable is binary**
 
 **b) Explain how logistic regression works around these issues.**
-  i. Prior to diving into logistic regression, introduce the concept of odds. Explain what an odds ratio is, and how it may be interpreted.  
-  ii. Present the regression equation for the logit model with multiple predictors.  
-    1. Present the regression equation in both the logit form (i.e., with ln(𝑝1−𝑝) on the left-hand side of the equation) and the logistic form (𝑝=𝑃(𝑌=1) on the left-hand side of the equation).  
-    a. In the formulas in (a) above, instead of writing 𝑌, 𝑥1… 𝑥𝑘, etc., write the names of the dependent and independent variables used in our actual model.  
-    b. Be sure to explain every term in each equation and talk about the logit and logistic functions (feel free to use the graphs in the slides as part of your explanation).  
-  i. Specifically, talk about the properties of the logistic function and explain why the logistic function works well for models where the dependent variable is binary.  
 
+**c) Describe the hypothesis that is tested for each predictor**  
+
+    
+**d) Talk about how you assess the quality of model fit.**  
+
+**e) Talk about the assumptions of logistic regression.**
+
+**f) Describe the exploratory analyses that statisticians may want to do before running logistic regression.**
+    
 # RESULTS
-
+**a) Present and discuss the results of the exploratory analyses.**
 ```{r cross.tab, include = TRUE, warning=FALSE, message=FALSE,results='hide'}
 Cross_Fatal<-CrossTable(mydata$FATAL_OR_M, mydata$DRINKING_D, prop.r=FALSE, prop.t=FALSE, prop.chisq=FALSE, chisq=TRUE)
 Cross_Fatal_tbl<-
@@ -227,6 +230,8 @@ MeanSD_tbl[, c(1,6,2,4,3,5,7)]%>%
   column_spec(c(5:6),background = '#e1e1e1')
 ```
 
+**b) Comment on which logistic regression assumptions are met and which ones are violated for the problem at hand.**
+
 ```{r corr.mat, include = TRUE, echo= FALSE, warning=FALSE, message=FALSE, fig.width=8, fig.height=6}
 pred_var <- mydata%>%dplyr::select(DRINKING_D, FATAL_OR_M, OVERTURNED, CELL_PHONE, SPEEDING,
                                    AGGRESSIVE,DRIVER1617,DRIVER65PLUS,PCTBACHMOR,MEDHHINC)
@@ -237,5 +242,10 @@ pcorr%>%kable()%>%kable_styling(full_width=FALSE)%>%kable_material()%>%
   column_spec(1,bold = TRUE)
 ```
 
+**c) Present the logistic regression results**
+
 # DISCUSSION
 
+**a) In a couple sentences, recap what you did in the paper, and your findings.**
+
+**b) What are some limitations of the analysis? Discuss.**

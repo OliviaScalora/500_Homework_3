@@ -65,7 +65,7 @@ if (window.hljs) {
 
 
 
-<link rel="stylesheet" href="data:text/css,h1%7Bfont%2Dweight%3A%20bold%3B%7Dbody%7Bfont%2Dfamily%3A%20Helvetica%3Bfont%2Dsize%3A%2012pt%3B%7D" type="text/css" />
+<link rel="stylesheet" href="data:text/css,h1%7Bfont%2Dweight%3A%20bold%3Bfont%2Dfamily%3A%20Helvetica%3B%7Dbody%7Bfont%2Dfamily%3A%20Helvetica%3Bfont%2Dsize%3A%2012pt%3B%7D" type="text/css" />
 
 
 
@@ -272,15 +272,15 @@ div.tocify {
 <div id="methods" class="section level1">
 <h1>METHODS</h1>
 <p><strong>a) Explain the problems with using OLS regression when the dependent variable is binary</strong></p>
-<p><strong>b) Explain how logistic regression works around these issues.</strong> i. Prior to diving into logistic regression, introduce the concept of odds. Explain what an odds ratio is, and how it may be interpreted.<br />
-ii. Present the regression equation for the logit model with multiple predictors.<br />
-1. Present the regression equation in both the logit form (i.e., with ln(𝑝1−𝑝) on the left-hand side of the equation) and the logistic form (𝑝=𝑃(𝑌=1) on the left-hand side of the equation).<br />
-a. In the formulas in (a) above, instead of writing 𝑌, 𝑥1… 𝑥𝑘, etc., write the names of the dependent and independent variables used in our actual model.<br />
-b. Be sure to explain every term in each equation and talk about the logit and logistic functions (feel free to use the graphs in the slides as part of your explanation).<br />
-i. Specifically, talk about the properties of the logistic function and explain why the logistic function works well for models where the dependent variable is binary.</p>
+<p><strong>b) Explain how logistic regression works around these issues.</strong></p>
+<p><strong>c) Describe the hypothesis that is tested for each predictor</strong></p>
+<p><strong>d) Talk about how you assess the quality of model fit.</strong></p>
+<p><strong>e) Talk about the assumptions of logistic regression.</strong></p>
+<p><strong>f) Describe the exploratory analyses that statisticians may want to do before running logistic regression.</strong></p>
 </div>
 <div id="results" class="section level1">
 <h1>RESULTS</h1>
+<p><strong>a) Present and discuss the results of the exploratory analyses.</strong></p>
 <pre class="r"><code>Cross_Fatal&lt;-CrossTable(mydata$FATAL_OR_M, mydata$DRINKING_D, prop.r=FALSE, prop.t=FALSE, prop.chisq=FALSE, chisq=TRUE)
 Cross_Fatal_tbl&lt;-
   cbind(as.data.frame(Cross_Fatal$t)%&gt;%filter(x==1)%&gt;%rename(N=Freq),
@@ -721,6 +721,7 @@ Median household income
 </tr>
 </tbody>
 </table>
+<p><strong>b) Comment on which logistic regression assumptions are met and which ones are violated for the problem at hand.</strong></p>
 <table class="table lightable-material" style="width: auto !important; margin-left: auto; margin-right: auto; font-family: &quot;Source Sans Pro&quot;, helvetica, sans-serif; margin-left: auto; margin-right: auto;">
 <thead>
 <tr>
@@ -1111,9 +1112,12 @@ MEDHHINC
 </tr>
 </tbody>
 </table>
+<p><strong>c) Present the logistic regression results</strong></p>
 </div>
 <div id="discussion" class="section level1">
 <h1>DISCUSSION</h1>
+<p><strong>a) In a couple sentences, recap what you did in the paper, and your findings.</strong></p>
+<p><strong>b) What are some limitations of the analysis? Discuss.</strong></p>
 </div>
 
 
