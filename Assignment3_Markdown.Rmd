@@ -59,30 +59,297 @@ head(mydata)
 
 # INTRODUCTION
 
-**a) State the problem, the importance of the problem, and the setting of the analysis (Philadelphia)**
+**a) State the problem, the importance of the problem, and the setting
+of the analysis (Philadelphia)**
 
-**b) Speculate as to why the predictors we’re using might be associated with the response variable.**
+**b) Speculate as to why the predictors we're using might be associated
+with the response variable.**
 
-**c) Indicate that you will be using R to run logistic regression for the analysis.**
+**c) Indicate that you will be using R to run logistic regression for
+the analysis.**
 
 # METHODS
 
-**a) Explain the problems with using OLS regression when the dependent variable is binary**
+**a) Explain the problems with using OLS regression when the dependent
+variable is binary**
+
+In OLS regression, the dependent variable is continuous and hopefully
+normal. And the beta coefficients are interpreted as the amount that
+dependent variable changes when the predictor increases by 1 unit. For
+example, $\beta^1$ is the amount by which variable Y (our dependent
+variable) changes when $x^1$ increases by 1 unit. But when dealing with
+a binary $Y$ that has only two outcomes, 0 and 1, a one unit increase in
+$x^1$ resulting in an $\beta^1$ increase in $Y$ makes no sense. Our
+binary dependent variable can only ever change from 0 to 1, or from 1 to
+0. Further, even when trying to get around the issue of predicting $Y$
+and instead predicting the probability that $Y=1$, linear regression
+predicts values of $Y$ that range between $-\infty$ to $+\infty$. This
+also makes little sense, because probabilities must range between 0 and
+1, and this linear model does not have such constraints.
 
 **b) Explain how logistic regression works around these issues.**
 
-**c) Describe the hypothesis that is tested for each predictor**  
+If we are able to stay within the range of 0 to 1, we can not only talk
+in terms of probability, but also in terms of odds which can be more
+approachable for most people. While probability is calculated as the
+number of desirable outcomes divided by the number of all possible
+outcomes, odds are the amount of desirable outcomes divided by the
+amount of the undesirable outcomes. In Logistic Regression, odds can be
+calculated as $\frac{P(Y=1)}{1-P(Y=1)}$.
 
-    
-**d) Talk about how you assess the quality of model fit.**  
+We can also look at odd ratios, or the ratio of odds of an outcome under
+one set of conditions compared to the odds of an outcome under another
+set of conditions. In multiple Logistic Regression, we can calculate the
+odds ratio by exponentiating the beta coefficients from the regression.
+The odds ratio can be interpreted as the extent to which the odds of
+$Y=1$ changes as the predictor increases by 1 unit.
+
+In our first logistic model, we included the following predictors:
+
+-   whether crash resulted in fatality of major injury(`FATAL_OR_M`)
+-   whether crash involved an overturned vehicle - whether driver was
+    using a cellphone
+-   whether crash involved speeding car
+-   whether crash involved aggressive driving
+-   whether crash involved at least one drive who was 16 or 17 years old
+    (`DRIVER1617`)
+-   whether crash involved at least one driver who was at least 65 year
+    old (`DRIVER65PLUS`)
+-   percent of individuals 25 years of age or older who have at least a
+    bachelors degree
+-   in the census block group where the crash took place (`PCTBACHMOR`)
+-   median household income in the census block group where the crash
+    took place (`MEDHHINC`)
+
+Below are the equations in both the Logit form and the Logistic form.
+
+**Logit Regression Equation**
+
+$$\ln(\frac{P(DRINKING\_D=1)}{1-P(DRINKING\_D=1)}) = \beta_0+\beta_{FATAL\_OR\_M}+\beta_{OVERTURNED}+\beta_{CELLPHONE}+\beta_{SPEEDING}+\beta_{AGGRESSIVE}+\beta_{DRIVER1617}+\beta_{DRIVER65PLUS}+\beta_{PCTBACHMOR}+\beta_{MEDHHINC}+\epsilon$$
+
+In the Logit form, the equation has the log odds of a crash involving a
+drunk driver on the left side - that is what we are predicting, where 1
+is yes and 0 is no. On the right, is the linear function of the
+predictor variables as listed above. And $\epsilon$ is the error term.
+
+**Logistic Regression Equation**
+
+$$P(DRINKING\_D=1) = \frac{e^{\beta_0+\beta_{FATAL\_OR\_M}+\beta_{OVERTURNED}+\beta_{CELLPHONE}+\beta_{SPEEDING}+\beta_{AGGRESSIVE}+\beta_{DRIVER1617}+\beta_{DRIVER65PLUS}+\beta_{PCTBACHMOR}+\beta_{MEDHHINC}}}{1+e^{\beta_0+\beta_{FATAL\_OR\_M}+\beta_{OVERTURNED}+\beta_{CELLPHONE}+\beta_{SPEEDING}+\beta_{AGGRESSIVE}+\beta_{DRIVER1617}+\beta_{DRIVER65PLUS}+\beta_{PCTBACHMOR}+\beta_{MEDHHINC}}}$$
+
+The Logistic Regression Equation is essentially the Logit equation
+reorganized to solve for $p$, or the $P(Y=1)$. Because the Logistic
+Regression equation has been reorganized to solve for $p$, we can use it
+to estimate the probability of $Y=1$ directly, instead of estimating the
+log odds of $Y=1$, as the Logit function does.
+
+Logistic Regression acts as a translator function of a linear regression
+that predicts probability, to get around the issue that kind of
+regression poses. In the explanation above, though the range of possible
+probabilities (from $-\infty$ to $+\infty$) doesn't make sense,
+intuitively there are somethings we can glean from it. If the linear
+probability model predits a 1.10 = 110% chance of $Y=1$, then we might
+expect there would be a very large probability of $Y$ actually equaling
+1. And if the predicted probability were negative, e.g. -0.50 = -50%
+chance of $Y=1$, then we would expect there to be a small probability of
+$Y$ actually being equal to 1. While the range of probabilities provided
+by a linear probability model do not make sense, Logistic Regression
+acts a translator function, translating those outputs into a range that
+does makes sense, a range of 0 to 1.
+
+For example, Logistic Regression would translate values as such: the
+closer the $\hat{y}$ value from the linear probability regression model
+is to $-\infty$, the closer the predicted probability is to 0. And, the
+closer the $\hat{y}$ value from the linear probability regression model
+is to $+\infty$, the closer the predicted probability is to 1. This
+leave us with a range from 0 to 1, where no predicted probabilities are
+greater than 1 or less than 0.
+
+**c) Describe the hypothesis that is tested for each predictor**
+
+Under logistic regression we test our hypothesis for each predictor. Our
+null hypothesis is $H_0: \beta_i = 0 (OR_i = 1)$ and our alternative
+hypothesis is $H_a:\beta_i \neq 0 (OR_i \neq 1)$. Additionally, our null
+and alternative hypothesis include the $OR$ because most statisticians
+prefer to work with odds ratios. Odds ratios can be calculated by
+exponentiation the coefficients.
+
+In logistic regression, when we take the quantity
+$\frac{\hat{\beta_i}-E(\hat{\beta_i})}{\sigma_{\hat{\beta_i}}} = \frac{\hat{\beta_i}-0}{\sigma_{\hat{\beta_i}}} = \frac{\hat{\beta_i}}{\sigma_{\hat{\beta_i}}}$,
+the quantity has a standard normal distribution. That means,
+$\frac{\hat{\beta_i}}{\sigma_{\hat{\beta_i}}}=z$, and in the context of
+Logistic Regression, this quantity is sometimes called the Wald
+Statistic.
+
+**d) Talk about how you assess the quality of model fit.**
+
+When thinking about the quality of our logistic regression model's fit,
+we can calculate an R-squared value, but it's not very useful and does
+not have the same interpretation as in OLS. This means that in Logistic
+Regression we cannot interpret R-squared as the % of variance explained
+by the model, like we can in OLS. The only interpretation we can make is
+that the higher the R-squared, the better.
+
+However, just as with other models, we can use the Akaike Information
+Criterion to compare different logistic models, or even compare logistic
+models to other kinds of models. The Akaike Information Criterion, or
+AIC, evaluates the relative quality of statistical models by estimating
+prediction error. The AIC is calculated using the maximum likelihood
+estimate and the number of predictors used in the model. This means that
+in comparing the quality of two statistical models, the AIC penalizes
+the model for adding additional predictors. The lower the AIC, the
+better model, if there is a difference in AIC of least 3 units. [UCLA,
+Lecture 20: Model
+Selection](http://www.stat.ucla.edu/~rgould/120w05/handouts/lect20.pdf)
+
+For Logistic Regression we can also look at the specificity, sensitivity
+and the misclassification rate. Sensitivity is calculated as:
+$$\frac{True Positives}{(True Positives + False Positives)}$$
+Specificity is calculated as:
+$$\frac{True Negatives}{(True Negatives + False Negatives)}$$ And the
+misclassification rate is calculated as:
+$$\frac{False Negatives+False Positives}{(True Negatives+ True Positives + False Positives+ False Negatives)}$$
+Sensitivity and specificity are essentially the rate at which we
+correctly predict True Positives and True Negatives. Ideally both the
+sensitivity and specificity will be high. The misclassification rate
+however, is the overall rate that incorrectly predict both 1 and 0.
+Ideally, the misclassification rate will be low.
+
+In Logistic Regression, the fitted or predicted values of $y$, i.e.
+$\hat{y}$, are calculated as the probability that $Y=1$. Ideally, our
+model will be able to predict a high probability of $Y=1$ when Y is
+actually 1. And ideally, our model will be able to predict a low
+probability of $Y=1$ when Y is actually 0, meaning it's not 1. But
+ultimately, we decide what is a high (enough) probability to be
+considered a prediction of $Y=1$ and we decide what is low (enough) to
+be considered a prediction of $Y\neq1$. The decision is where to place
+the cutoff threshold. For example, if we decide that the cutoff
+threshold should be 0.50, then any $\hat{y}$ \< 0.50 will be considered
+a prediction of $Y\neq1$ and any $\hat{y}$ \> 0.50 will be considered a
+prediction of $Y=1$.
+
+What we correctly predict as $Y=1$ is called a True Positive and what we
+incorrectly predict as $Y=1$ is called a False Positive. Together those
+two values are used to calculate the Sensitivity, or the True Positive
+rate. Similarly, what we correctly predict as $Y\neq1$ is called a True
+Negative and what we incorrectly predict as $Y\neq1$ is called a False
+Negative. Together those two values are used to calculate the
+Specificity, or the True Negative rate. And lastly, all four values,
+True Positive, True Negative, False Negative, and False Positive are
+used to calculate the missclassification rate.
+
+As noted above, which $\hat{y}$ values are considered to be correctly or
+incorrectly predicted depends on where we set our cutoff threshold. Each
+threshold has it's own upsides and downsides. A threshold of 0.06 may
+result in a high True Positive rate, but it may also result in a high
+False Positive Rate. Essentially, in this scenario, at the cost counting
+most $\hat{y}$ as predicting $Y=1$, you might correctly predict all of
+the instances where y is actually 1, but you will also incorrectly
+predict where y is actually 0.
+
+To help in making the best decision of where to place the cutoff
+threshold, we can use an ROC curve. The ROC curve shows the quality of
+predictions of various thresholds by plotting the True Positive Rate
+(Sensitivity) versus the False Positive Rate for every possible cut-off
+threshold. The best threshold can be determined by optimizing
+sensitivity and specificity. In the case that the model's use benefits
+from having both sensitivity and specificity maximized, we can use the
+Youden Index to identify an optimal threshold mathematically.
+Alternatively, given that specificity and sensitivity should be
+maximized, a threshold can be determined by identifying the point of the
+curve where it has the minimum distance from the upper left corner of
+the graph, i.e. where both specificity and sensitivity are equal to 1.
+We will be using the latter approach in R.
+
+Another helpful metric for determining the quality of our model is the
+area under the ROC curve (AUC). The value of the AUC should be above
+0.60 if the model is any use at all. An AUC between 0.50 and 0.60 is a
+fail, between .60 and .70 is poor, between 0.70 and 0.80 is fair,
+between .80 and .90 is good, and in some cases an AUC of .90 and 1 is
+excellent. Although depending on the model's use, an AUC of 1 might not
+be good, because it would mean that the model is overfit and would not
+predict well on unseen data. Additionally, in real world cases, an AUC
+greater than 0.7 is generally good.
 
 **e) Talk about the assumptions of logistic regression.**
 
-**f) Describe the exploratory analyses that statisticians may want to do before running logistic regression.**
-    
+The first assumption of Logistic Regression is that our dependent
+variable be binary. Additionally, our observations must be independent
+of each other, there should be no severe multicollinearity. Further
+unlike in OLS, Logistic Regression does not require the assumption that
+there needs to be a linear relationship between the dependent variable
+and each predictor, nor does it assume homoscedasticity or that the
+residuals be normal. However, larger samples are needed for Logistic
+Regression because Maximum Likelihood Estimation is used instead of
+least squares to estimate regression coefficients. We need at least 50
+observations per predictor for Logistic Regression, compared to only 10
+per predictor for OLS.
+
+**f) Describe the exploratory analyses that statisticians may want to do
+before running logistic regression.**
+
+Before we run our Logistic Regression Model, it is a good idea to run
+cross-tabulations between the dependent variable and binary predictors,
+to see whether there is an association between them. In doing so, we may
+identify a "perfect prediction problem" where only one value of a
+predictor is associated with only one value of the response variable. If
+this problem were identified, we would simply remove the predictor for
+which this is a problem and continue with the model.
+
+Additionally, the Chi-Square test is the appropriate statistical test
+for examining the association between two categorical variables. In the
+Chi-Square test, our null and alternative hypotheses are as such:
+
+$H_0$: the proportion of fatalities for crashes that involve drunk
+drivers is the same as the proportion of fatalities for crashes that do
+not involve drunk drivers.
+
+$H_a$: the porportion of fatalities for crashes that involve drunk
+drivers is different than the proportion of fatalities for crashes that
+do not involve drunk drivers.
+
+A high value of the $\chi^2$ statistic with a p-value \< 0.05, would
+suggest that there is evidence to reject the null hypothesis for the
+alternative. It would also suggest that there is an association between
+drunk driving fand crash fatalities.
+
+Before we run our Logistic Regression Model we should also examine
+whether the means of the continuous predictors seem to differ for the
+different levels of the dependent variable. The independent samples
+t-test is the appropriate statistical test to do this, to examine if
+there are significant differences in mean values of our continuous
+variables, `PCTBACHMOR` and `MEDHHINC`, for crashes that involved drunk
+driving and those that didn't. In the independent samples t-test, our
+null and alternative hypotheses are as such:
+
+$H_0$: average values of each continuous variable are the same for
+crashes that involve drunk drivers and crashes that did not.
+
+$H_a$: average values of each continuous variable are different for
+crashes that involve drunk drivers and crashes that did not.
+
+A high value of the t-statistic with a p-value \< 0.05 would suggest
+that there is evidence to reject the null hypothesis in favor of the
+alternative.
+
+We also took a look at the pearson correlations between all the
+predictors (both binary and continuous) to determine if there was
+evidence of severe multicollinearity.
+
 # RESULTS
+
 **a) Present and discuss the results of the exploratory analyses.**
+
 ```{r cross.tab, include = TRUE, warning=FALSE, message=FALSE,results='hide'}
+
+#2.a
+#Alternative way of tabulating (and obtaining proportions for each category)
+DRINKING_D.tab <- table(mydata$DRINKING_D)
+DRINKING_D.tab%>%kable(format = "html", align = "ll", caption = "Drunk Driving Counts")%>%kable_paper()%>%kable_styling(full_width=F) 
+prop.table(DRINKING_D.tab)%>%kable(format = "html", align = "ll", caption = "Drunk Driving Proportion")%>%kable_paper()%>%kable_styling(full_width=F)
+#proportion of crashes that involved a drunk driver
+
+
+
 Cross_Fatal<-CrossTable(mydata$FATAL_OR_M, mydata$DRINKING_D, prop.r=FALSE, prop.t=FALSE, prop.chisq=FALSE, chisq=TRUE)
 Cross_Fatal_tbl<-
   cbind(as.data.frame(Cross_Fatal$t)%>%filter(x==1)%>%rename(N=Freq),
@@ -171,7 +438,7 @@ CrossTable<-CrossTabley%>%mutate(Total_N = N+N_1,
 CrossTable[, c(3,7,1,5,2,6,4,8)]%>%
   kable(col.names = c("Variable", "","N","%","N","%","N", "X2 P.value"),
                                      align = c('r','l','c','c','c','c','c','c'))%>%
-  kable_material()%>%
+  kable_paper()%>%
   add_header_above(c("","","No Alcohol Involved\n(Drinkind_D = 0)" = 2, "Alcohol Involved\n(Drinkind_D = 1)" = 2,"Total", ""),
                                                 align = c('r','c'))%>%
   column_spec(1,bold = TRUE)%>%
@@ -220,7 +487,7 @@ MeanSD_tbl<- merge(x=(merge(x=meanHHinc, y=sdHHinc, all= TRUE)),
 MeanSD_tbl[, c(1,6,2,4,3,5,7)]%>%
   kable(col.names = c("Variable","","Mean","SD","Mean","SD","t-test p-value"),
                                      align = c('r','l','c','c','c','c','c'))%>%
-  kable_material()%>%
+  kable_paper()%>%
   add_header_above(c("","","No Alcohol Involved\n(Drinkind_D = 0)" = 2,
                      "Alcohol Involved\n(Drinkind_D = 1)" = 2,""),
                    align = c('r','c'))%>%
@@ -230,7 +497,8 @@ MeanSD_tbl[, c(1,6,2,4,3,5,7)]%>%
   column_spec(c(5:6),background = '#e1e1e1')
 ```
 
-**b) Comment on which logistic regression assumptions are met and which ones are violated for the problem at hand.**
+**b) Comment on which logistic regression assumptions are met and which
+ones are violated for the problem at hand.**
 
 ```{r corr.mat, include = TRUE, echo= FALSE, warning=FALSE, message=FALSE, fig.width=8, fig.height=6}
 pred_var <- mydata%>%dplyr::select(DRINKING_D, FATAL_OR_M, OVERTURNED, CELL_PHONE, SPEEDING,
@@ -238,14 +506,393 @@ pred_var <- mydata%>%dplyr::select(DRINKING_D, FATAL_OR_M, OVERTURNED, CELL_PHON
 pcorr <- cor(pred_var, method="pearson")
 
 #correlation matrix for markdown
-pcorr%>%kable()%>%kable_styling(full_width=FALSE)%>%kable_material()%>%
+pcorr%>%kable()%>%kable_styling(full_width=FALSE)%>%kable_paper()%>%
   column_spec(1,bold = TRUE)
 ```
 
 **c) Present the logistic regression results**
 
+When using logistic regression to identify predictors of accidents
+related to drunk driving, we employed two different models. The first
+used all the predictors listed in the methods section. The results for
+this model are shown below.
+
+```{r logitcode, include=FALSE, echo=TRUE, warning=FALSE, echo=FALSE, results='hide'}
+#Step 3 -------------------------------------
+
+
+
+#Logistic Regression
+mylogit <- glm(DRINKING_D ~ FATAL_OR_M + OVERTURNED + CELL_PHONE + SPEEDING + AGGRESSIVE + DRIVER1617 + DRIVER65PLUS + PCTBACHMOR + MEDHHINC, data=mydata, family = "binomial")
+
+# SAVING LOGSITIC REGRESSION OUTPUT AS LOGITOUTPUT
+logitoutput<-summary(mylogit)
+
+# SAVING COEFFS ESTIMATES, STANDARD ERROR, Z-VALUES, AND P-VALUES AS LOGITCOEFFS
+logitcoeffs<-logitoutput$coefficients
+
+
+# SAVING ODDS RATIONS AND 95% CONFIDENCE INTERVALS FOR THE ODDS RATIOS AS OR_CI
+or_ci<- exp(cbind(OR=coef(mylogit), confint(mylogit)))
+
+# APPENDING COEFFS WITH ODDS RATIOS AND CONFIDENCE INTERVALS
+finallogitoutput<- cbind(logitcoeffs, or_ci)
+
+
+
+
+
+```
+
+```{r logittable, include = TRUE, echo= FALSE, warning=FALSE, message=FALSE, fig.width=8, fig.height=6}
+
+# MAKING IT PRETTY
+
+finallogitoutput%>%kable(format = "html", align = "rlllllll", caption = "Logistic Regression Results")%>%
+  kable_paper("hover")%>%kable_styling(full_width=F)
+
+```
+
+Nearly all of the predictors appear to be significant except for
+`PCTBACHMOR` and `CELLPHONE`. And whether the crash involved a speeding
+car (`SPEEDING`), has the highest odds ratio. The odds of a crash
+involving a drunk driver and a car that is speeding are 365.98% higher
+than the odds of the crash involving a drunk driver but no car that is
+speeding, holding all other variables constant. The predictors for
+whether the crash involved a fatality or serious injury, as well as
+whether a car involved in the crash overturned also have high odds
+ratios. The odds of a crash involving a drunk driver and a fatality or
+serious injury are 125.69% higher than the odds of a crash involving a
+drunk driver and no serious injury or fatality, all else constant. And
+the odds of a crash involving a drunk driver and an overturned car are
+153.17% higher than the odds of a crash involving a drunk driver and no
+overturned car, all else constant. The Median Household Income of the
+census block group where the crash took place seems to be the only
+significant continuous variable, but it's effect on the dependent
+variable is not strong. For a one percent increase in `MEDHHINC`, the
+odds of a crash involving a drunk driver go up by 0.00028%, all else
+constant. The remaining significant predictors can be interpreted as
+such:
+
+**With all else constant, the odds of a crash involving a drunk driver
+:**
+
+-   and aggressive driving are 44.94% lower than the odds of crash
+    involving a drunk driver and no aggressive driving
+
+-   and at least one driver between 16 and 17 years old are 72.21% lower
+    than the odds of crash involving a drunk driver and no driver
+    between 16 and 17 years old
+
+-   and at least one driver at least 65 years old are 53.91% lower than
+    the odds of crash involving a drunk driver and no driver at least 65
+    years old
+
+Below is a table that shows the specificity, sensitivity, and
+misclassification rates for the different probability cut-offs. The
+cut-off that yields the lowest misclassification rate is the 0.0
+threshold, highlighted in yellow. The 0.50 threshold yields a 0.0573506
+misclassification rate. The cut-off that yields the highest
+misclassification rate is the 0.02 threshold, the lowest threshold. The
+0.02 threshold yields a misclassification rate of 0.8888940.
+
+```{r spec.sens.mis.code, include=FALSE, echo=TRUE, warning=FALSE, echo=FALSE, results='hide'}
+
+  ## 3.a.iii ---- 
+
+#### bringing in iterate thresholds fn 
+# Iterate Thresholds Chapter 6, 7 (left in Chapters)
+iterateThresholds <- function(data, observedClass, predictedProbs, group) {
+  #This function takes as its inputs, a data frame with an observed binomial class (1 or 0); a vector of predicted #probabilities; and optionally a group indicator like race. It returns accuracy plus counts and rates of confusion matrix #outcomes. It's a bit verbose because of the if (missing(group)). I don't know another way to make an optional parameter.
+  observedClass <- enquo(observedClass)
+  predictedProbs <- enquo(predictedProbs)
+  group <- enquo(group)
+  x = .01
+  all_prediction <- data.frame()
+  
+  if (missing(group)) {
+    
+    while (x <= 1) {
+      this_prediction <- data.frame()
+      
+      this_prediction <-
+        data %>%
+        mutate(predclass = ifelse(!!predictedProbs > x, 1,0)) %>%
+        count(predclass, !!observedClass) %>%
+        summarize(Count_TN = sum(n[predclass==0 & !!observedClass==0]),
+                  Count_TP = sum(n[predclass==1 & !!observedClass==1]),
+                  Count_FN = sum(n[predclass==0 & !!observedClass==1]),
+                  Count_FP = sum(n[predclass==1 & !!observedClass==0]),
+                  Rate_TP = Count_TP / (Count_TP + Count_FN),
+                  Rate_FP = Count_FP / (Count_FP + Count_TN),
+                  Rate_FN = Count_FN / (Count_FN + Count_TP),
+                  Rate_TN = Count_TN / (Count_TN + Count_FP),
+                  Sensitivity = Count_TP / (Count_TP + Count_FP),
+                  Specificity = Count_TN / (Count_TN + Count_FN),
+                  MissClass_Rate = (Count_FP + Count_FN)/(Count_FP + Count_FN + Count_TP + Count_TN), 
+                  Accuracy = (Count_TP + Count_TN) / 
+                    (Count_TP + Count_TN + Count_FN + Count_FP)) %>%
+        mutate(Threshold = round(x,2))
+      
+      all_prediction <- rbind(all_prediction,this_prediction)
+      x <- x + .01
+    }
+    return(all_prediction)
+  }
+  else if (!missing(group)) { 
+    while (x <= 1) {
+      this_prediction <- data.frame()
+      
+      this_prediction <-
+        data %>%
+        mutate(predclass = ifelse(!!predictedProbs > x, 1,0)) %>%
+        group_by(!!group) %>%
+        count(predclass, !!observedClass) %>%
+        summarize(Count_TN = sum(n[predclass==0 & !!observedClass==0]),
+                  Count_TP = sum(n[predclass==1 & !!observedClass==1]),
+                  Count_FN = sum(n[predclass==0 & !!observedClass==1]),
+                  Count_FP = sum(n[predclass==1 & !!observedClass==0]),
+                  Rate_TP = Count_TP / (Count_TP + Count_FN),
+                  Rate_FP = Count_FP / (Count_FP + Count_TN),
+                  Rate_FN = Count_FN / (Count_FN + Count_TP),
+                  Rate_TN = Count_TN / (Count_TN + Count_FP),
+                  Sensitivity = Count_TP / (Count_TP + Count_FP),
+                  Specificity = Count_TN / (Count_TN + Count_FN),
+                  MissClass_Rate = (Count_FP + Count_FN)/(Count_FP + Count_FN + Count_TP + Count_TN),
+                  Accuracy = (Count_TP + Count_TN) / 
+                    (Count_TP + Count_TN + Count_FN + Count_FP)) %>%
+        mutate(Threshold = round(x,2))
+      
+      all_prediction <- rbind(all_prediction,this_prediction)
+      x <- x + .01
+    }
+    return(all_prediction)
+  }
+}
+
+#prepping
+fit <-mylogit$fitted.values
+
+#a is a matrix combining the vectors containing y and y-hat in matrix a; first variable is
+#DRINKING_D, which is y; second variable is fit, which is y-hat
+
+a <- cbind(mydata$DRINKING_D, fit)
+
+#b is matrix a, just sorted by the variable fit
+b <- a[order(a[,2]),]
+b=as.data.frame(b)
+colnames(b) <- c("Observed.DRINKING_D","Probability.DRINKING_D")
+
+#### Don't Need This Stuff, that is folded ----
+
+#Calculating variable c which is 1 if y-hat (second column of matrix b) is greater
+#than or equal to 0.05 and 0 otherwise.
+
+#Other cut-offs can be used here!
+c <- (b[,2] >= 0.05)
+
+
+#Creating matrix d which merges matrixes b and c
+d <- cbind(b,c)
+
+#Let's label the columns of matrix d for easier reading
+colnames(d) <- c("Observed.DRINKING_D","Probability.DRINKING_D","Prob.Above.Cutoff")
+
+#Converting matrix to data frame
+e=as.data.frame(d)
+
+# ----
+
+whichThreshold <- 
+  iterateThresholds(
+    data=b, observedClass = Observed.DRINKING_D, predictedProbs = Probability.DRINKING_D)
+
+
+# looking for these threshes:
+
+ourthresh <- whichThreshold %>%filter(Threshold == 0.02 | Threshold == 0.03|Threshold == 0.05|(Threshold > 0.06 & Threshold < 0.11)| Threshold == 0.15 | Threshold == 0.2 | Threshold == 0.5)%>%
+  dplyr::select(Threshold, Sensitivity, Specificity, MissClass_Rate)
+
+
+
+```
+
+```{r spec.sens.mis.table, include = TRUE, echo= FALSE, warning=FALSE, message=FALSE, fig.width=8, fig.height=6}
+ourthresh%>%kable(format = "html", align = "llll", caption = "Goodness of Fit Metrics",
+                  col.names = c("Cut Off Value", "Sensitivity", "Specificity", "Missclassification Rate"))%>%
+  kable_paper("hover")%>%kable_styling(full_width=F)%>% 
+  row_spec(10, bold = T,background = "#f0d560")
+
+
+```
+
+Below is the resulting ROC curve and a table showing our optimal cutoff
+and associated sensitivity and specificity values. Working with the goal
+that specificity and sensitivity should be maximized, our threshold was
+determined by identifying the point of the curve where it has the
+minimum distance from the upper left corner of the graph, i.e. where
+both specificity and sensitivity are equal to 1. We identified that the
+optimal threshold is 0.06. This threshold is significantly lower than
+the optimal threshold identified using only the misclassification rate
+as a guide. The resulting sensitivity and specificity are both ...
+[***IDK what is going on here. I tried to repurpose the iterate
+thresholds fn from 508, so maybe that has something to do with this? The
+problem is that the sensitivity and specificity shown in the optimal
+cutoff table for threshold of 0.06 is wildly different than the
+thresholds of 0.07 and 0.05 shown in the misclassification rate table. I
+will investigate later.***]{.ul}
+
+```{r roc.optthresh.code, include=FALSE, echo=TRUE, warning=FALSE, echo=FALSE, results='hide'}
+
+ ## 3.a.iv-v ---- 
+#ROC Curve 
+#For more info, see: https://hopstat.wordpress.com/2014/12/19/a-small-introduction-to-the-rocr-package/
+
+#Here, predictions are estimated probabilities (i.e., p or y-hat values)
+#Also, labels are actual y-values
+
+
+a <- cbind(mydata$DRINKING_D, fit)
+
+#From above, we see that matrix a has 2 columns: 
+  #1. The first one is mydata$DRINKING_D, which are actual 
+  #values of y (i.e., labels)
+  #2. The second one is fit, which are predicted, or fitted values
+  #of y (i.e., predictions)
+
+#Let's make the names of the variables easy to understand
+
+colnames(a) <- c("labels","predictions")
+
+
+roc <- as.data.frame(a)
+pred <- prediction(roc$predictions, roc$labels)
+
+
+  #Below, tpr = true positive rate, another term for sensitivity
+  #fpr = false positive rate, or 1-specificity
+
+
+#Optimal cut-point:
+  #if you want to weigh specificity and sensitivity equally.
+  #There are a couple ways to identify the optimal cut point.
+  #One is the so-called Youden Index, which identifies the cut-off
+  #point for which (sensitivity + specificity) is maximized.
+  
+  #Another one, calculated using the code below, is the cut-off
+  #value for which the ROC curve has the minimum distance from
+  #the upper left corner of the graph, where specificity = 1 and
+  #sensitivity = 1. (This is just a different way of maximizing 
+  #specificity and sensitivity). This is where the 
+  #d = (x - 0)^2 + (y-1)^2
+  #in the code below comes in.
+
+opt.cut = function(perf, pred){
+  cut.ind = mapply(FUN=function(x, y, p){
+    d = (x - 0)^2 + (y-1)^2
+    ind = which(d == min(d))
+    c(sensitivity = y[[ind]], specificity = 1-x[[ind]], 
+      cutoff = p[[ind]])
+  }, perf@x.values, perf@y.values, pred@cutoffs)
+}
+
+
+
+
+
+```
+
+```{r roc.optthresh.output, include = TRUE, echo= FALSE, warning=FALSE, message=FALSE, fig.width=8, fig.height=6}
+
+  #Below, tpr = true positive rate, another term for sensitivity
+  #fpr = false positive rate, or 1-specificity
+
+roc.perf = performance(pred, measure = "tpr", x.measure="fpr")
+plot(roc.perf)
+abline(a=0,b=1)
+
+
+  #This will print the optimal cut-off point and the corresponding
+  #specificity and sensitivity 
+
+opt.cut(roc.perf, pred)%>%kable(format = "html", align = "ll", caption = "Optimal Cutoff")%>%
+  kable_paper("hover")%>%kable_styling(full_width=F)%>%row_spec(3, bold=TRUE, background = "#f0d560")
+
+
+
+```
+
+Additionally, the resulting AUC for the ROC curve is 0.6398 and that
+tells us that our model is fair, but note great.
+
+```{r auc, include = TRUE, echo= FALSE, warning=FALSE, message=FALSE, fig.width=8, fig.height=6}
+auc.perf = performance(pred, measure ="auc")
+auc.perf@y.values%>%kable(col.names= c("Area Under the Curve"), format = "html", align = "c")%>%kable_material()%>%kable_styling(full_width=F, position = "center")
+
+```
+
+Below are the results from the second model that incorporated all the
+same predictors as the first model except `PCTBACHMOR` and `MEDHHINC`.
+In this variation it appears that all of the same variable are
+significant, the only one not significant is `CELLPHONE`.
+
+```{r logit.round2.aic.code, include=FALSE, echo=TRUE, warning=FALSE, echo=FALSE, results='hide'}
+
+
+#Step 3 ROUND TWO  -------------------------------------
+
+## 3.a.i ROUND TWO ---- 
+#Logistic Regression
+mylogit2 <- glm(DRINKING_D ~ FATAL_OR_M + OVERTURNED + CELL_PHONE + SPEEDING + AGGRESSIVE + DRIVER1617 + DRIVER65PLUS, data=mydata, family = "binomial")
+
+## 3.a.ii ROUND TWO---- 
+# SAVING LOGSITIC REGRESSION OUTPUT AS LOGITOUTPUT
+logitoutput2<-summary(mylogit2)
+
+# SAVING COEFFS ESTIMATES, STANDARD ERROR, Z-VALUES, AND P-VALUES AS LOGITCOEFFS
+logitcoeffs2<-logitoutput2$coefficients
+
+
+# SAVING ODDS RATIONS AND 95% CONFIDENCE INTERVALS FOR THE ODDS RATIOS AS OR_CI
+or_ci2<- exp(cbind(OR=coef(mylogit2), confint(mylogit2)))
+
+# APPENDING COEFFS WITH ODDS RATIOS AND CONFIDENCE INTERVALS
+finallogitoutput2<- cbind(logitcoeffs2, or_ci2)
+
+## Final Step AIC -------------------------------------------
+
+
+aic <- AIC(mylogit, mylogit2)%>%as.data.frame()
+rownames(aic) <- NULL   
+
+
+```
+
+```{r logit.round2.output, nclude = TRUE, echo= FALSE, warning=FALSE, message=FALSE, fig.width=8, fig.height=6}
+
+# MAKING IT PRETTY
+
+finallogitoutput2%>%kable(format = "html", align = "rlllllll", caption = "Logistic Regression Results: Round Two")%>%
+  kable_paper("hover")%>%kable_styling(full_width=F)
+
+```
+
+We also examined if either of the models were better than the other
+using the Akaike Information Criterion. The the difference in AIC
+between the two models is not larger than three, so we cannot say that
+one of our models is better than the other.
+
+```{r aic.output, nclude = TRUE, echo= FALSE, warning=FALSE, message=FALSE, fig.width=8, fig.height=6}
+
+aic%>%mutate(Model = c("Logit 1", "Logit 2"))%>% rename("Degrees of Freedom" = df)%>%
+  dplyr::select(Model, "Degrees of Freedom", AIC)%>%kable(format = "html", align = "lll", caption = "AIC Results")%>%
+  kable_paper("hover")%>%kable_styling(full_width=F)
+
+```
+
 # DISCUSSION
 
-**a) In a couple sentences, recap what you did in the paper, and your findings.**
+**a) In a couple sentences, recap what you did in the paper, and your
+findings.**
 
 **b) What are some limitations of the analysis? Discuss.**

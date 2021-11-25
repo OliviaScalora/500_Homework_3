@@ -272,16 +272,70 @@ div.tocify {
 <div id="methods" class="section level1">
 <h1>METHODS</h1>
 <p><strong>a) Explain the problems with using OLS regression when the dependent variable is binary</strong></p>
+<p>In OLS regression, the dependent variable is continuous and hopefully normal. And the beta coefficients are interpreted as the amount that dependent variable changes when the predictor increases by 1 unit. For example, <span class="math inline">\(\beta^1\)</span> is the amount by which variable Y (our dependent variable) changes when <span class="math inline">\(x^1\)</span> increases by 1 unit. But when dealing with a binary <span class="math inline">\(Y\)</span> that has only two outcomes, 0 and 1, a one unit increase in <span class="math inline">\(x^1\)</span> resulting in an <span class="math inline">\(\beta^1\)</span> increase in <span class="math inline">\(Y\)</span> makes no sense. Our binary dependent variable can only ever change from 0 to 1, or from 1 to 0. Further, even when trying to get around the issue of predicting <span class="math inline">\(Y\)</span> and instead predicting the probability that <span class="math inline">\(Y=1\)</span>, linear regression predicts values of <span class="math inline">\(Y\)</span> that range between <span class="math inline">\(-\infty\)</span> to <span class="math inline">\(+\infty\)</span>. This also makes little sense, because probabilities must range between 0 and 1, and this linear model does not have such constraints.</p>
 <p><strong>b) Explain how logistic regression works around these issues.</strong></p>
+<p>If we are able to stay within the range of 0 to 1, we can not only talk in terms of probability, but also in terms of odds which can be more approachable for most people. While probability is calculated as the number of desirable outcomes divided by the number of all possible outcomes, odds are the amount of desirable outcomes divided by the amount of the undesirable outcomes. In Logistic Regression, odds can be calculated as <span class="math inline">\(\frac{P(Y=1)}{1-P(Y=1)}\)</span>.</p>
+<p>We can also look at odd ratios, or the ratio of odds of an outcome under one set of conditions compared to the odds of an outcome under another set of conditions. In multiple Logistic Regression, we can calculate the odds ratio by exponentiating the beta coefficients from the regression. The odds ratio can be interpreted as the extent to which the odds of <span class="math inline">\(Y=1\)</span> changes as the predictor increases by 1 unit.</p>
+<p>In our first logistic model, we included the following predictors:</p>
+<ul>
+<li>whether crash resulted in fatality of major injury(<code>FATAL_OR_M</code>)</li>
+<li>whether crash involved an overturned vehicle - whether driver was using a cellphone</li>
+<li>whether crash involved speeding car</li>
+<li>whether crash involved aggressive driving</li>
+<li>whether crash involved at least one drive who was 16 or 17 years old (<code>DRIVER1617</code>)</li>
+<li>whether crash involved at least one driver who was at least 65 year old (<code>DRIVER65PLUS</code>)</li>
+<li>percent of individuals 25 years of age or older who have at least a bachelors degree</li>
+<li>in the census block group where the crash took place (<code>PCTBACHMOR</code>)</li>
+<li>median household income in the census block group where the crash took place (<code>MEDHHINC</code>)</li>
+</ul>
+<p>Below are the equations in both the Logit form and the Logistic form.</p>
+<p><strong>Logit Regression Equation</strong></p>
+<p><span class="math display">\[\ln(\frac{P(DRINKING\_D=1)}{1-P(DRINKING\_D=1)}) = \beta_0+\beta_{FATAL\_OR\_M}+\beta_{OVERTURNED}+\beta_{CELLPHONE}+\beta_{SPEEDING}+\beta_{AGGRESSIVE}+\beta_{DRIVER1617}+\beta_{DRIVER65PLUS}+\beta_{PCTBACHMOR}+\beta_{MEDHHINC}+\epsilon\]</span></p>
+<p>In the Logit form, the equation has the log odds of a crash involving a drunk driver on the left side - that is what we are predicting, where 1 is yes and 0 is no. On the right, is the linear function of the predictor variables as listed above. And <span class="math inline">\(\epsilon\)</span> is the error term.</p>
+<p><strong>Logistic Regression Equation</strong></p>
+<p><span class="math display">\[P(DRINKING\_D=1) = \frac{e^{\beta_0+\beta_{FATAL\_OR\_M}+\beta_{OVERTURNED}+\beta_{CELLPHONE}+\beta_{SPEEDING}+\beta_{AGGRESSIVE}+\beta_{DRIVER1617}+\beta_{DRIVER65PLUS}+\beta_{PCTBACHMOR}+\beta_{MEDHHINC}}}{1+e^{\beta_0+\beta_{FATAL\_OR\_M}+\beta_{OVERTURNED}+\beta_{CELLPHONE}+\beta_{SPEEDING}+\beta_{AGGRESSIVE}+\beta_{DRIVER1617}+\beta_{DRIVER65PLUS}+\beta_{PCTBACHMOR}+\beta_{MEDHHINC}}}\]</span></p>
+<p>The Logistic Regression Equation is essentially the Logit equation reorganized to solve for <span class="math inline">\(p\)</span>, or the <span class="math inline">\(P(Y=1)\)</span>. Because the Logistic Regression equation has been reorganized to solve for <span class="math inline">\(p\)</span>, we can use it to estimate the probability of <span class="math inline">\(Y=1\)</span> directly, instead of estimating the log odds of <span class="math inline">\(Y=1\)</span>, as the Logit function does.</p>
+<p>Logistic Regression acts as a translator function of a linear regression that predicts probability, to get around the issue that kind of regression poses. In the explanation above, though the range of possible probabilities (from <span class="math inline">\(-\infty\)</span> to <span class="math inline">\(+\infty\)</span>) doesn’t make sense, intuitively there are somethings we can glean from it. If the linear probability model predits a 1.10 = 110% chance of <span class="math inline">\(Y=1\)</span>, then we might expect there would be a very large probability of <span class="math inline">\(Y\)</span> actually equaling 1. And if the predicted probability were negative, e.g. -0.50 = -50% chance of <span class="math inline">\(Y=1\)</span>, then we would expect there to be a small probability of <span class="math inline">\(Y\)</span> actually being equal to 1. While the range of probabilities provided by a linear probability model do not make sense, Logistic Regression acts a translator function, translating those outputs into a range that does makes sense, a range of 0 to 1.</p>
+<p>For example, Logistic Regression would translate values as such: the closer the <span class="math inline">\(\hat{y}\)</span> value from the linear probability regression model is to <span class="math inline">\(-\infty\)</span>, the closer the predicted probability is to 0. And, the closer the <span class="math inline">\(\hat{y}\)</span> value from the linear probability regression model is to <span class="math inline">\(+\infty\)</span>, the closer the predicted probability is to 1. This leave us with a range from 0 to 1, where no predicted probabilities are greater than 1 or less than 0.</p>
 <p><strong>c) Describe the hypothesis that is tested for each predictor</strong></p>
+<p>Under logistic regression we test our hypothesis for each predictor. Our null hypothesis is <span class="math inline">\(H_0: \beta_i = 0 (OR_i = 1)\)</span> and our alternative hypothesis is <span class="math inline">\(H_a:\beta_i \neq 0 (OR_i \neq 1)\)</span>. Additionally, our null and alternative hypothesis include the <span class="math inline">\(OR\)</span> because most statisticians prefer to work with odds ratios. Odds ratios can be calculated by exponentiation the coefficients.</p>
+<p>In logistic regression, when we take the quantity <span class="math inline">\(\frac{\hat{\beta_i}-E(\hat{\beta_i})}{\sigma_{\hat{\beta_i}}} = \frac{\hat{\beta_i}-0}{\sigma_{\hat{\beta_i}}} = \frac{\hat{\beta_i}}{\sigma_{\hat{\beta_i}}}\)</span>, the quantity has a standard normal distribution. That means, <span class="math inline">\(\frac{\hat{\beta_i}}{\sigma_{\hat{\beta_i}}}=z\)</span>, and in the context of Logistic Regression, this quantity is sometimes called the Wald Statistic.</p>
 <p><strong>d) Talk about how you assess the quality of model fit.</strong></p>
+<p>When thinking about the quality of our logistic regression model’s fit, we can calculate an R-squared value, but it’s not very useful and does not have the same interpretation as in OLS. This means that in Logistic Regression we cannot interpret R-squared as the % of variance explained by the model, like we can in OLS. The only interpretation we can make is that the higher the R-squared, the better.</p>
+<p>However, just as with other models, we can use the Akaike Information Criterion to compare different logistic models, or even compare logistic models to other kinds of models. The Akaike Information Criterion, or AIC, evaluates the relative quality of statistical models by estimating prediction error. The AIC is calculated using the maximum likelihood estimate and the number of predictors used in the model. This means that in comparing the quality of two statistical models, the AIC penalizes the model for adding additional predictors. The lower the AIC, the better model, if there is a difference in AIC of least 3 units. <a href="http://www.stat.ucla.edu/~rgould/120w05/handouts/lect20.pdf">UCLA, Lecture 20: Model Selection</a></p>
+<p>For Logistic Regression we can also look at the specificity, sensitivity and the misclassification rate. Sensitivity is calculated as: <span class="math display">\[\frac{True Positives}{(True Positives + False Positives)}\]</span> Specificity is calculated as: <span class="math display">\[\frac{True Negatives}{(True Negatives + False Negatives)}\]</span> And the misclassification rate is calculated as: <span class="math display">\[\frac{False Negatives+False Positives}{(True Negatives+ True Positives + False Positives+ False Negatives)}\]</span> Sensitivity and specificity are essentially the rate at which we correctly predict True Positives and True Negatives. Ideally both the sensitivity and specificity will be high. The misclassification rate however, is the overall rate that incorrectly predict both 1 and 0. Ideally, the misclassification rate will be low.</p>
+<p>In Logistic Regression, the fitted or predicted values of <span class="math inline">\(y\)</span>, i.e. <span class="math inline">\(\hat{y}\)</span>, are calculated as the probability that <span class="math inline">\(Y=1\)</span>. Ideally, our model will be able to predict a high probability of <span class="math inline">\(Y=1\)</span> when Y is actually 1. And ideally, our model will be able to predict a low probability of <span class="math inline">\(Y=1\)</span> when Y is actually 0, meaning it’s not 1. But ultimately, we decide what is a high (enough) probability to be considered a prediction of <span class="math inline">\(Y=1\)</span> and we decide what is low (enough) to be considered a prediction of <span class="math inline">\(Y\neq1\)</span>. The decision is where to place the cutoff threshold. For example, if we decide that the cutoff threshold should be 0.50, then any <span class="math inline">\(\hat{y}\)</span> &lt; 0.50 will be considered a prediction of <span class="math inline">\(Y\neq1\)</span> and any <span class="math inline">\(\hat{y}\)</span> &gt; 0.50 will be considered a prediction of <span class="math inline">\(Y=1\)</span>.</p>
+<p>What we correctly predict as <span class="math inline">\(Y=1\)</span> is called a True Positive and what we incorrectly predict as <span class="math inline">\(Y=1\)</span> is called a False Positive. Together those two values are used to calculate the Sensitivity, or the True Positive rate. Similarly, what we correctly predict as <span class="math inline">\(Y\neq1\)</span> is called a True Negative and what we incorrectly predict as <span class="math inline">\(Y\neq1\)</span> is called a False Negative. Together those two values are used to calculate the Specificity, or the True Negative rate. And lastly, all four values, True Positive, True Negative, False Negative, and False Positive are used to calculate the missclassification rate.</p>
+<p>As noted above, which <span class="math inline">\(\hat{y}\)</span> values are considered to be correctly or incorrectly predicted depends on where we set our cutoff threshold. Each threshold has it’s own upsides and downsides. A threshold of 0.06 may result in a high True Positive rate, but it may also result in a high False Positive Rate. Essentially, in this scenario, at the cost counting most <span class="math inline">\(\hat{y}\)</span> as predicting <span class="math inline">\(Y=1\)</span>, you might correctly predict all of the instances where y is actually 1, but you will also incorrectly predict where y is actually 0.</p>
+<p>To help in making the best decision of where to place the cutoff threshold, we can use an ROC curve. The ROC curve shows the quality of predictions of various thresholds by plotting the True Positive Rate (Sensitivity) versus the False Positive Rate for every possible cut-off threshold. The best threshold can be determined by optimizing sensitivity and specificity. In the case that the model’s use benefits from having both sensitivity and specificity maximized, we can use the Youden Index to identify an optimal threshold mathematically. Alternatively, given that specificity and sensitivity should be maximized, a threshold can be determined by identifying the point of the curve where it has the minimum distance from the upper left corner of the graph, i.e. where both specificity and sensitivity are equal to 1. We will be using the latter approach in R.</p>
+<p>Another helpful metric for determining the quality of our model is the area under the ROC curve (AUC). The value of the AUC should be above 0.60 if the model is any use at all. An AUC between 0.50 and 0.60 is a fail, between .60 and .70 is poor, between 0.70 and 0.80 is fair, between .80 and .90 is good, and in some cases an AUC of .90 and 1 is excellent. Although depending on the model’s use, an AUC of 1 might not be good, because it would mean that the model is overfit and would not predict well on unseen data. Additionally, in real world cases, an AUC greater than 0.7 is generally good.</p>
 <p><strong>e) Talk about the assumptions of logistic regression.</strong></p>
+<p>The first assumption of Logistic Regression is that our dependent variable be binary. Additionally, our observations must be independent of each other, there should be no severe multicollinearity. Further unlike in OLS, Logistic Regression does not require the assumption that there needs to be a linear relationship between the dependent variable and each predictor, nor does it assume homoscedasticity or that the residuals be normal. However, larger samples are needed for Logistic Regression because Maximum Likelihood Estimation is used instead of least squares to estimate regression coefficients. We need at least 50 observations per predictor for Logistic Regression, compared to only 10 per predictor for OLS.</p>
 <p><strong>f) Describe the exploratory analyses that statisticians may want to do before running logistic regression.</strong></p>
+<p>Before we run our Logistic Regression Model, it is a good idea to run cross-tabulations between the dependent variable and binary predictors, to see whether there is an association between them. In doing so, we may identify a “perfect prediction problem” where only one value of a predictor is associated with only one value of the response variable. If this problem were identified, we would simply remove the predictor for which this is a problem and continue with the model.</p>
+<p>Additionally, the Chi-Square test is the appropriate statistical test for examining the association between two categorical variables. In the Chi-Square test, our null and alternative hypotheses are as such:</p>
+<p><span class="math inline">\(H_0\)</span>: the proportion of fatalities for crashes that involve drunk drivers is the same as the proportion of fatalities for crashes that do not involve drunk drivers.</p>
+<p><span class="math inline">\(H_a\)</span>: the porportion of fatalities for crashes that involve drunk drivers is different than the proportion of fatalities for crashes that do not involve drunk drivers.</p>
+<p>A high value of the <span class="math inline">\(\chi^2\)</span> statistic with a p-value &lt; 0.05, would suggest that there is evidence to reject the null hypothesis for the alternative. It would also suggest that there is an association between drunk driving fand crash fatalities.</p>
+<p>Before we run our Logistic Regression Model we should also examine whether the means of the continuous predictors seem to differ for the different levels of the dependent variable. The independent samples t-test is the appropriate statistical test to do this, to examine if there are significant differences in mean values of our continuous variables, <code>PCTBACHMOR</code> and <code>MEDHHINC</code>, for crashes that involved drunk driving and those that didn’t. In the independent samples t-test, our null and alternative hypotheses are as such:</p>
+<p><span class="math inline">\(H_0\)</span>: average values of each continuous variable are the same for crashes that involve drunk drivers and crashes that did not.</p>
+<p><span class="math inline">\(H_a\)</span>: average values of each continuous variable are different for crashes that involve drunk drivers and crashes that did not.</p>
+<p>A high value of the t-statistic with a p-value &lt; 0.05 would suggest that there is evidence to reject the null hypothesis in favor of the alternative.</p>
+<p>We also took a look at the pearson correlations between all the predictors (both binary and continuous) to determine if there was evidence of severe multicollinearity.</p>
 </div>
 <div id="results" class="section level1">
 <h1>RESULTS</h1>
 <p><strong>a) Present and discuss the results of the exploratory analyses.</strong></p>
-<pre class="r"><code>Cross_Fatal&lt;-CrossTable(mydata$FATAL_OR_M, mydata$DRINKING_D, prop.r=FALSE, prop.t=FALSE, prop.chisq=FALSE, chisq=TRUE)
+<pre class="r"><code>#2.a
+#Alternative way of tabulating (and obtaining proportions for each category)
+DRINKING_D.tab &lt;- table(mydata$DRINKING_D)
+DRINKING_D.tab%&gt;%kable(format = &quot;html&quot;, align = &quot;ll&quot;, caption = &quot;Drunk Driving Counts&quot;)%&gt;%kable_paper()%&gt;%kable_styling(full_width=F) 
+prop.table(DRINKING_D.tab)%&gt;%kable(format = &quot;html&quot;, align = &quot;ll&quot;, caption = &quot;Drunk Driving Proportion&quot;)%&gt;%kable_paper()%&gt;%kable_styling(full_width=F)
+#proportion of crashes that involved a drunk driver
+
+
+
+Cross_Fatal&lt;-CrossTable(mydata$FATAL_OR_M, mydata$DRINKING_D, prop.r=FALSE, prop.t=FALSE, prop.chisq=FALSE, chisq=TRUE)
 Cross_Fatal_tbl&lt;-
   cbind(as.data.frame(Cross_Fatal$t)%&gt;%filter(x==1)%&gt;%rename(N=Freq),
         as.data.frame(Cross_Fatal[[&quot;prop.tbl&quot;]])%&gt;%filter(x==1)%&gt;%rename(&#39;percentage&#39;=Freq,x1=x,y1=y))%&gt;%
@@ -362,7 +416,7 @@ CrossTable&lt;-CrossTabley%&gt;%mutate(Total_N = N+N_1,
     Cross_Agg[[&quot;chisq&quot;]][[&quot;p.value&quot;]],
     Cross_1617[[&quot;chisq&quot;]][[&quot;p.value&quot;]],
     Cross_65P[[&quot;chisq&quot;]][[&quot;p.value&quot;]])))</code></pre>
-<table class=" lightable-material" style="font-family: &quot;Source Sans Pro&quot;, helvetica, sans-serif; margin-left: auto; margin-right: auto;">
+<table class=" lightable-paper" style="font-family: &quot;Arial Narrow&quot;, arial, helvetica, sans-serif; margin-left: auto; margin-right: auto;">
 <thead>
 <tr>
 <th style="empty-cells: hide;" colspan="1">
@@ -370,17 +424,17 @@ CrossTable&lt;-CrossTabley%&gt;%mutate(Total_N = N+N_1,
 <th style="empty-cells: hide;" colspan="1">
 </th>
 <th style="padding-bottom:0; padding-left:3px;padding-right:3px;text-align: center; " colspan="2">
-<div style="border-bottom: 1px solid #eee; padding-bottom: 16px; padding-top: 16px; height: 56px;">
+<div style="border-bottom: 1px solid #00000020; padding-bottom: 5px; ">
 No Alcohol Involved<br>(Drinkind_D = 0)
 </div>
 </th>
 <th style="padding-bottom:0; padding-left:3px;padding-right:3px;text-align: center; " colspan="2">
-<div style="border-bottom: 1px solid #eee; padding-bottom: 16px; padding-top: 16px; height: 56px;">
+<div style="border-bottom: 1px solid #00000020; padding-bottom: 5px; ">
 Alcohol Involved<br>(Drinkind_D = 1)
 </div>
 </th>
 <th style="padding-bottom:0; padding-left:3px;padding-right:3px;text-align: center; " colspan="1">
-<div style="border-bottom: 1px solid #eee; padding-bottom: 16px; padding-top: 16px; height: 56px;">
+<div style="border-bottom: 1px solid #00000020; padding-bottom: 5px; ">
 Total
 </div>
 </th>
@@ -629,7 +683,7 @@ MeanSD_tbl&lt;- merge(x=(merge(x=meanHHinc, y=sdHHinc, all= TRUE)),
     &quot;% with a bachelor&#39;s degree or more&quot;,
     &quot;Median household income&quot;)))%&gt;%
   bind_cols(ttest_pvalues)</code></pre>
-<table class=" lightable-material" style="font-family: &quot;Source Sans Pro&quot;, helvetica, sans-serif; margin-left: auto; margin-right: auto;">
+<table class=" lightable-paper" style="font-family: &quot;Arial Narrow&quot;, arial, helvetica, sans-serif; margin-left: auto; margin-right: auto;">
 <thead>
 <tr>
 <th style="empty-cells: hide;" colspan="1">
@@ -637,12 +691,12 @@ MeanSD_tbl&lt;- merge(x=(merge(x=meanHHinc, y=sdHHinc, all= TRUE)),
 <th style="empty-cells: hide;" colspan="1">
 </th>
 <th style="padding-bottom:0; padding-left:3px;padding-right:3px;text-align: center; " colspan="2">
-<div style="border-bottom: 1px solid #eee; padding-bottom: 16px; padding-top: 16px; height: 56px;">
+<div style="border-bottom: 1px solid #00000020; padding-bottom: 5px; ">
 No Alcohol Involved<br>(Drinkind_D = 0)
 </div>
 </th>
 <th style="padding-bottom:0; padding-left:3px;padding-right:3px;text-align: center; " colspan="2">
-<div style="border-bottom: 1px solid #eee; padding-bottom: 16px; padding-top: 16px; height: 56px;">
+<div style="border-bottom: 1px solid #00000020; padding-bottom: 5px; ">
 Alcohol Involved<br>(Drinkind_D = 1)
 </div>
 </th>
@@ -722,7 +776,7 @@ Median household income
 </tbody>
 </table>
 <p><strong>b) Comment on which logistic regression assumptions are met and which ones are violated for the problem at hand.</strong></p>
-<table class="table lightable-material" style="width: auto !important; margin-left: auto; margin-right: auto; font-family: &quot;Source Sans Pro&quot;, helvetica, sans-serif; margin-left: auto; margin-right: auto;">
+<table class="table lightable-paper" style="width: auto !important; margin-left: auto; margin-right: auto; font-family: &quot;Arial Narrow&quot;, arial, helvetica, sans-serif; margin-left: auto; margin-right: auto;">
 <thead>
 <tr>
 <th style="text-align:left;">
@@ -1113,6 +1167,816 @@ MEDHHINC
 </tbody>
 </table>
 <p><strong>c) Present the logistic regression results</strong></p>
+<p>When using logistic regression to identify predictors of accidents related to drunk driving, we employed two different models. The first used all the predictors listed in the methods section. The results for this model are shown below.</p>
+<table class=" lightable-paper lightable-hover table" style="font-family: &quot;Arial Narrow&quot;, arial, helvetica, sans-serif; margin-left: auto; margin-right: auto; width: auto !important; margin-left: auto; margin-right: auto;">
+<caption>
+Logistic Regression Results
+</caption>
+<thead>
+<tr>
+<th style="text-align:left;">
+</th>
+<th style="text-align:right;">
+Estimate
+</th>
+<th style="text-align:left;">
+Std. Error
+</th>
+<th style="text-align:left;">
+z value
+</th>
+<th style="text-align:left;">
+Pr(&gt;|z|)
+</th>
+<th style="text-align:left;">
+OR
+</th>
+<th style="text-align:left;">
+2.5 %
+</th>
+<th style="text-align:left;">
+97.5 %
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+(Intercept)
+</td>
+<td style="text-align:right;">
+-2.7325066
+</td>
+<td style="text-align:left;">
+0.0458757
+</td>
+<td style="text-align:left;">
+-59.5633209
+</td>
+<td style="text-align:left;">
+0.0000000
+</td>
+<td style="text-align:left;">
+0.0650560
+</td>
+<td style="text-align:left;">
+0.0594763
+</td>
+<td style="text-align:left;">
+0.0711952
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+FATAL_OR_M
+</td>
+<td style="text-align:right;">
+0.8140138
+</td>
+<td style="text-align:left;">
+0.0838069
+</td>
+<td style="text-align:left;">
+9.7129660
+</td>
+<td style="text-align:left;">
+0.0000000
+</td>
+<td style="text-align:left;">
+2.2569488
+</td>
+<td style="text-align:left;">
+1.9099141
+</td>
+<td style="text-align:left;">
+2.6531335
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+OVERTURNED
+</td>
+<td style="text-align:right;">
+0.9289214
+</td>
+<td style="text-align:left;">
+0.1091663
+</td>
+<td style="text-align:left;">
+8.5092302
+</td>
+<td style="text-align:left;">
+0.0000000
+</td>
+<td style="text-align:left;">
+2.5317769
+</td>
+<td style="text-align:left;">
+2.0346233
+</td>
+<td style="text-align:left;">
+3.1224273
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+CELL_PHONE
+</td>
+<td style="text-align:right;">
+0.0295501
+</td>
+<td style="text-align:left;">
+0.1977778
+</td>
+<td style="text-align:left;">
+0.1494105
+</td>
+<td style="text-align:left;">
+0.8812297
+</td>
+<td style="text-align:left;">
+1.0299910
+</td>
+<td style="text-align:left;">
+0.6835474
+</td>
+<td style="text-align:left;">
+1.4884684
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+SPEEDING
+</td>
+<td style="text-align:right;">
+1.5389757
+</td>
+<td style="text-align:left;">
+0.0805459
+</td>
+<td style="text-align:left;">
+19.1068171
+</td>
+<td style="text-align:left;">
+0.0000000
+</td>
+<td style="text-align:left;">
+4.6598146
+</td>
+<td style="text-align:left;">
+3.9741309
+</td>
+<td style="text-align:left;">
+5.4502064
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+AGGRESSIVE
+</td>
+<td style="text-align:right;">
+-0.5969159
+</td>
+<td style="text-align:left;">
+0.0477792
+</td>
+<td style="text-align:left;">
+-12.4932079
+</td>
+<td style="text-align:left;">
+0.0000000
+</td>
+<td style="text-align:left;">
+0.5505068
+</td>
+<td style="text-align:left;">
+0.5010169
+</td>
+<td style="text-align:left;">
+0.6042349
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+DRIVER1617
+</td>
+<td style="text-align:right;">
+-1.2802960
+</td>
+<td style="text-align:left;">
+0.2931472
+</td>
+<td style="text-align:left;">
+-4.3674171
+</td>
+<td style="text-align:left;">
+0.0000126
+</td>
+<td style="text-align:left;">
+0.2779550
+</td>
+<td style="text-align:left;">
+0.1477443
+</td>
+<td style="text-align:left;">
+0.4710928
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+DRIVER65PLUS
+</td>
+<td style="text-align:right;">
+-0.7746646
+</td>
+<td style="text-align:left;">
+0.0958583
+</td>
+<td style="text-align:left;">
+-8.0813505
+</td>
+<td style="text-align:left;">
+0.0000000
+</td>
+<td style="text-align:left;">
+0.4608583
+</td>
+<td style="text-align:left;">
+0.3799836
+</td>
+<td style="text-align:left;">
+0.5534785
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+PCTBACHMOR
+</td>
+<td style="text-align:right;">
+-0.0003706
+</td>
+<td style="text-align:left;">
+0.0012964
+</td>
+<td style="text-align:left;">
+-0.2858974
+</td>
+<td style="text-align:left;">
+0.7749567
+</td>
+<td style="text-align:left;">
+0.9996294
+</td>
+<td style="text-align:left;">
+0.9970704
+</td>
+<td style="text-align:left;">
+1.0021509
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+MEDHHINC
+</td>
+<td style="text-align:right;">
+0.0000028
+</td>
+<td style="text-align:left;">
+0.0000013
+</td>
+<td style="text-align:left;">
+2.0913870
+</td>
+<td style="text-align:left;">
+0.0364934
+</td>
+<td style="text-align:left;">
+1.0000028
+</td>
+<td style="text-align:left;">
+1.0000001
+</td>
+<td style="text-align:left;">
+1.0000054
+</td>
+</tr>
+</tbody>
+</table>
+<p>Nearly all of the predictors appear to be significant except for <code>PCTBACHMOR</code> and <code>CELLPHONE</code>. And whether the crash involved a speeding car (<code>SPEEDING</code>), has the highest odds ratio. The odds of a crash involving a drunk driver and a car that is speeding are 365.98% higher than the odds of the crash involving a drunk driver but no car that is speeding, holding all other variables constant. The predictors for whether the crash involved a fatality or serious injury, as well as whether a car involved in the crash overturned also have high odds ratios. The odds of a crash involving a drunk driver and a fatality or serious injury are 125.69% higher than the odds of a crash involving a drunk driver and no serious injury or fatality, all else constant. And the odds of a crash involving a drunk driver and an overturned car are 153.17% higher than the odds of a crash involving a drunk driver and no overturned car, all else constant. The Median Household Income of the census block group where the crash took place seems to be the only significant continuous variable, but it’s effect on the dependent variable is not strong. For a one percent increase in <code>MEDHHINC</code>, the odds of a crash involving a drunk driver go up by 0.00028%, all else constant. The remaining significant predictors can be interpreted as such:</p>
+<p><strong>With all else constant, the odds of a crash involving a drunk driver :</strong></p>
+<ul>
+<li><p>and aggressive driving are 44.94% lower than the odds of crash involving a drunk driver and no aggressive driving</p></li>
+<li><p>and at least one driver between 16 and 17 years old are 72.21% lower than the odds of crash involving a drunk driver and no driver between 16 and 17 years old</p></li>
+<li><p>and at least one driver at least 65 years old are 53.91% lower than the odds of crash involving a drunk driver and no driver at least 65 years old</p></li>
+</ul>
+<p>Below is a table that shows the specificity, sensitivity, and misclassification rates for the different probability cut-offs. The cut-off that yields the lowest misclassification rate is the 0.0 threshold, highlighted in yellow. The 0.50 threshold yields a 0.0573506 misclassification rate. The cut-off that yields the highest misclassification rate is the 0.02 threshold, the lowest threshold. The 0.02 threshold yields a misclassification rate of 0.8888940.</p>
+<table class=" lightable-paper lightable-hover table" style="font-family: &quot;Arial Narrow&quot;, arial, helvetica, sans-serif; margin-left: auto; margin-right: auto; width: auto !important; margin-left: auto; margin-right: auto;">
+<caption>
+Goodness of Fit Metrics
+</caption>
+<thead>
+<tr>
+<th style="text-align:left;">
+Cut Off Value
+</th>
+<th style="text-align:left;">
+Sensitivity
+</th>
+<th style="text-align:left;">
+Specificity
+</th>
+<th style="text-align:left;">
+Missclassification Rate
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+0.02
+</td>
+<td style="text-align:left;">
+0.0596840
+</td>
+<td style="text-align:left;">
+0.9830228
+</td>
+<td style="text-align:left;">
+0.8888940
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+0.03
+</td>
+<td style="text-align:left;">
+0.0598727
+</td>
+<td style="text-align:left;">
+0.9819617
+</td>
+<td style="text-align:left;">
+0.8835440
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+0.05
+</td>
+<td style="text-align:left;">
+0.0776064
+</td>
+<td style="text-align:left;">
+0.9667759
+</td>
+<td style="text-align:left;">
+0.5156812
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+0.07
+</td>
+<td style="text-align:left;">
+0.1350356
+</td>
+<td style="text-align:left;">
+0.9507521
+</td>
+<td style="text-align:left;">
+0.1258648
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+0.08
+</td>
+<td style="text-align:left;">
+0.1546496
+</td>
+<td style="text-align:left;">
+0.9498465
+</td>
+<td style="text-align:left;">
+0.1045798
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+0.09
+</td>
+<td style="text-align:left;">
+0.1591169
+</td>
+<td style="text-align:left;">
+0.9492599
+</td>
+<td style="text-align:left;">
+0.0986071
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+0.10
+</td>
+<td style="text-align:left;">
+0.1615842
+</td>
+<td style="text-align:left;">
+0.9491418
+</td>
+<td style="text-align:left;">
+0.0967162
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+0.15
+</td>
+<td style="text-align:left;">
+0.1856631
+</td>
+<td style="text-align:left;">
+0.9469609
+</td>
+<td style="text-align:left;">
+0.0775297
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+0.20
+</td>
+<td style="text-align:left;">
+0.2317073
+</td>
+<td style="text-align:left;">
+0.9436894
+</td>
+<td style="text-align:left;">
+0.0603496
+</td>
+</tr>
+<tr>
+<td style="text-align:left;font-weight: bold;background-color: #f0d560 !important;">
+0.50
+</td>
+<td style="text-align:left;font-weight: bold;background-color: #f0d560 !important;">
+0.5000000
+</td>
+<td style="text-align:left;font-weight: bold;background-color: #f0d560 !important;">
+0.9427761
+</td>
+<td style="text-align:left;font-weight: bold;background-color: #f0d560 !important;">
+0.0573056
+</td>
+</tr>
+</tbody>
+</table>
+<p>Below is the resulting ROC curve and a table showing our optimal cutoff and associated sensitivity and specificity values. Working with the goal that specificity and sensitivity should be maximized, our threshold was determined by identifying the point of the curve where it has the minimum distance from the upper left corner of the graph, i.e. where both specificity and sensitivity are equal to 1. We identified that the optimal threshold is 0.06. This threshold is significantly lower than the optimal threshold identified using only the misclassification rate as a guide. The resulting sensitivity and specificity are both … <u><strong><em>IDK what is going on here. I tried to repurpose the iterate thresholds fn from 508, so maybe that has something to do with this? The problem is that the sensitivity and specificity shown in the optimal cutoff table for threshold of 0.06 is wildly different than the thresholds of 0.07 and 0.05 shown in the misclassification rate table. I will investigate later.</em></strong></u></p>
+<img src="data:image/png;base64,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" width="768" />
+<table class=" lightable-paper lightable-hover table" style="font-family: &quot;Arial Narrow&quot;, arial, helvetica, sans-serif; margin-left: auto; margin-right: auto; width: auto !important; margin-left: auto; margin-right: auto;">
+<caption>
+Optimal Cutoff
+</caption>
+<tbody>
+<tr>
+<td style="text-align:left;">
+sensitivity
+</td>
+<td style="text-align:left;">
+0.6607646
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+specificity
+</td>
+<td style="text-align:left;">
+0.5452433
+</td>
+</tr>
+<tr>
+<td style="text-align:left;font-weight: bold;background-color: #f0d560 !important;">
+cutoff
+</td>
+<td style="text-align:left;font-weight: bold;background-color: #f0d560 !important;">
+0.0636515
+</td>
+</tr>
+</tbody>
+</table>
+<p>Additionally, the resulting AUC for the ROC curve is 0.6398 and that tells us that our model is fair, but note great.</p>
+<table class="kable_wrapper lightable-material table" style="font-family: &quot;Source Sans Pro&quot;, helvetica, sans-serif; margin-left: auto; margin-right: auto; width: auto !important; margin-left: auto; margin-right: auto;">
+<tbody>
+<tr>
+<td>
+<table>
+<thead>
+<tr>
+<th style="text-align:center;">
+Area Under the Curve
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center;">
+0.6398695
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Below are the results from the second model that incorporated all the same predictors as the first model except <code>PCTBACHMOR</code> and <code>MEDHHINC</code>. In this variation it appears that all of the same variable are significant, the only one not significant is <code>CELLPHONE</code>.</p>
+<table class=" lightable-paper lightable-hover table" style="font-family: &quot;Arial Narrow&quot;, arial, helvetica, sans-serif; margin-left: auto; margin-right: auto; width: auto !important; margin-left: auto; margin-right: auto;">
+<caption>
+Logistic Regression Results: Round Two
+</caption>
+<thead>
+<tr>
+<th style="text-align:left;">
+</th>
+<th style="text-align:right;">
+Estimate
+</th>
+<th style="text-align:left;">
+Std. Error
+</th>
+<th style="text-align:left;">
+z value
+</th>
+<th style="text-align:left;">
+Pr(&gt;|z|)
+</th>
+<th style="text-align:left;">
+OR
+</th>
+<th style="text-align:left;">
+2.5 %
+</th>
+<th style="text-align:left;">
+97.5 %
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+(Intercept)
+</td>
+<td style="text-align:right;">
+-2.6518996
+</td>
+<td style="text-align:left;">
+0.0275311
+</td>
+<td style="text-align:left;">
+-96.3238683
+</td>
+<td style="text-align:left;">
+0.0000000
+</td>
+<td style="text-align:left;">
+0.0705171
+</td>
+<td style="text-align:left;">
+0.0667864
+</td>
+<td style="text-align:left;">
+0.0743978
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+FATAL_OR_M
+</td>
+<td style="text-align:right;">
+0.8093156
+</td>
+<td style="text-align:left;">
+0.0837615
+</td>
+<td style="text-align:left;">
+9.6621431
+</td>
+<td style="text-align:left;">
+0.0000000
+</td>
+<td style="text-align:left;">
+2.2463700
+</td>
+<td style="text-align:left;">
+1.9011246
+</td>
+<td style="text-align:left;">
+2.6404533
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+OVERTURNED
+</td>
+<td style="text-align:right;">
+0.9397842
+</td>
+<td style="text-align:left;">
+0.1090343
+</td>
+<td style="text-align:left;">
+8.6191585
+</td>
+<td style="text-align:left;">
+0.0000000
+</td>
+<td style="text-align:left;">
+2.5594290
+</td>
+<td style="text-align:left;">
+2.0573601
+</td>
+<td style="text-align:left;">
+3.1556897
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+CELL_PHONE
+</td>
+<td style="text-align:right;">
+0.0310737
+</td>
+<td style="text-align:left;">
+0.1977709
+</td>
+<td style="text-align:left;">
+0.1571195
+</td>
+<td style="text-align:left;">
+0.8751506
+</td>
+<td style="text-align:left;">
+1.0315615
+</td>
+<td style="text-align:left;">
+0.6845978
+</td>
+<td style="text-align:left;">
+1.4907150
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+SPEEDING
+</td>
+<td style="text-align:right;">
+1.5403203
+</td>
+<td style="text-align:left;">
+0.0805279
+</td>
+<td style="text-align:left;">
+19.1277908
+</td>
+<td style="text-align:left;">
+0.0000000
+</td>
+<td style="text-align:left;">
+4.6660847
+</td>
+<td style="text-align:left;">
+3.9796186
+</td>
+<td style="text-align:left;">
+5.4573472
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+AGGRESSIVE
+</td>
+<td style="text-align:right;">
+-0.5936469
+</td>
+<td style="text-align:left;">
+0.0477478
+</td>
+<td style="text-align:left;">
+-12.4329656
+</td>
+<td style="text-align:left;">
+0.0000000
+</td>
+<td style="text-align:left;">
+0.5523094
+</td>
+<td style="text-align:left;">
+0.5026882
+</td>
+<td style="text-align:left;">
+0.6061758
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+DRIVER1617
+</td>
+<td style="text-align:right;">
+-1.2715761
+</td>
+<td style="text-align:left;">
+0.2931097
+</td>
+<td style="text-align:left;">
+-4.3382260
+</td>
+<td style="text-align:left;">
+0.0000144
+</td>
+<td style="text-align:left;">
+0.2803894
+</td>
+<td style="text-align:left;">
+0.1490473
+</td>
+<td style="text-align:left;">
+0.4751771
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+DRIVER65PLUS
+</td>
+<td style="text-align:right;">
+-0.7664573
+</td>
+<td style="text-align:left;">
+0.0957644
+</td>
+<td style="text-align:left;">
+-8.0035718
+</td>
+<td style="text-align:left;">
+0.0000000
+</td>
+<td style="text-align:left;">
+0.4646563
+</td>
+<td style="text-align:left;">
+0.3831829
+</td>
+<td style="text-align:left;">
+0.5579332
+</td>
+</tr>
+</tbody>
+</table>
+<p>We also examined if either of the models were better than the other using the Akaike Information Criterion. The the difference in AIC between the two models is not larger than three, so we cannot say that one of our models is better than the other.</p>
+<table class=" lightable-paper lightable-hover table" style="font-family: &quot;Arial Narrow&quot;, arial, helvetica, sans-serif; margin-left: auto; margin-right: auto; width: auto !important; margin-left: auto; margin-right: auto;">
+<caption>
+AIC Results
+</caption>
+<thead>
+<tr>
+<th style="text-align:left;">
+Model
+</th>
+<th style="text-align:left;">
+Degrees of Freedom
+</th>
+<th style="text-align:left;">
+AIC
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+Logit 1
+</td>
+<td style="text-align:left;">
+10
+</td>
+<td style="text-align:left;">
+18359.63
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Logit 2
+</td>
+<td style="text-align:left;">
+8
+</td>
+<td style="text-align:left;">
+18360.47
+</td>
+</tr>
+</tbody>
+</table>
 </div>
 <div id="discussion" class="section level1">
 <h1>DISCUSSION</h1>

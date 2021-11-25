@@ -61,7 +61,8 @@ summary(factor(mydata$DRIVER65PLUS))
 #2.a
 #Alternative way of tabulating (and obtaining proportions for each category)
 DRINKING_D.tab <- table(mydata$DRINKING_D)
-prop.table(DRINKING_D.tab)
+DRINKING_D.tab%>%kable(format = "html", align = "ll", caption = "Drunk Driving Counts")%>%kable_paper()%>%kable_styling(full_width=F) 
+prop.table(DRINKING_D.tab)%>%kable(format = "html", align = "ll", caption = "Drunk Driving Proportion")%>%kable_material()%>%kable_styling(full_width=F)
 #proportion of crashes that involved a drunk driver
 
 #        0           1 
@@ -264,23 +265,104 @@ pcorr%>%kable()%>%kable_material()%>%
 #Step 3 -------------------------------------
 #everything below was existing code -Olivia
 
-
+  ## 3.a.i ---- 
 #Logistic Regression
 mylogit <- glm(DRINKING_D ~ FATAL_OR_M + OVERTURNED + CELL_PHONE + SPEEDING + AGGRESSIVE + DRIVER1617 + DRIVER65PLUS + PCTBACHMOR + MEDHHINC, data=mydata, family = "binomial")
-summary(mylogit)
+  
+  ## 3.a.ii ---- 
+# SAVING LOGSITIC REGRESSION OUTPUT AS LOGITOUTPUT
+logitoutput<-summary(mylogit)
 
-mylogit1 <- glm(DRINKING_D ~ FATAL_OR_M + OVERTURNED + CELL_PHONE + SPEEDING + AGGRESSIVE + DRIVER1617 + DRIVER65PLUS, data=mydata, family = "binomial")
-summary(mylogit1)
+# SAVING COEFFS ESTIMATES, STANDARD ERROR, Z-VALUES, AND P-VALUES AS LOGITCOEFFS
+logitcoeffs<-logitoutput$coefficients
+logitcoeffs
 
-exp(cbind(OR = coef(mylogit), confint(mylogit)))
+# SAVING ODDS RATIONS AND 95% CONFIDENCE INTERVALS FOR THE ODDS RATIOS AS OR_CI
+or_ci<- exp(cbind(OR=coef(mylogit), confint(mylogit)))
 
-OR <- exp(coef(mylogit))
-CONFINT <- exp(confint(mylogit))
+# APPENDING COEFFS WITH ODDS RATIOS AND CONFIDENCE INTERVALS
+finallogitoutput<- cbind(logitcoeffs, or_ci)
+finallogitoutput
 
-#Histogram of fitted values (predicted probabilities of y = 1)
+# MAKING IT PRETTY
+
+finallogitoutput%>%kable(format = "html", align = "rlllllll", caption = "Logit Results")%>%
+  kable_material("hover")%>%kable_styling(full_width=F)
+
+  ## 3.a.iii ---- 
+
+#### bringing in iterate thresholds fn 
+# Iterate Thresholds Chapter 6, 7 (left in Chapters)
+iterateThresholds <- function(data, observedClass, predictedProbs, group) {
+  #This function takes as its inputs, a data frame with an observed binomial class (1 or 0); a vector of predicted #probabilities; and optionally a group indicator like race. It returns accuracy plus counts and rates of confusion matrix #outcomes. It's a bit verbose because of the if (missing(group)). I don't know another way to make an optional parameter.
+  observedClass <- enquo(observedClass)
+  predictedProbs <- enquo(predictedProbs)
+  group <- enquo(group)
+  x = .01
+  all_prediction <- data.frame()
+  
+  if (missing(group)) {
+    
+    while (x <= 1) {
+      this_prediction <- data.frame()
+      
+      this_prediction <-
+        data %>%
+        mutate(predclass = ifelse(!!predictedProbs > x, 1,0)) %>%
+        count(predclass, !!observedClass) %>%
+        summarize(Count_TN = sum(n[predclass==0 & !!observedClass==0]),
+                  Count_TP = sum(n[predclass==1 & !!observedClass==1]),
+                  Count_FN = sum(n[predclass==0 & !!observedClass==1]),
+                  Count_FP = sum(n[predclass==1 & !!observedClass==0]),
+                  Rate_TP = Count_TP / (Count_TP + Count_FN),
+                  Rate_FP = Count_FP / (Count_FP + Count_TN),
+                  Rate_FN = Count_FN / (Count_FN + Count_TP),
+                  Rate_TN = Count_TN / (Count_TN + Count_FP),
+                  Sensitivity = Count_TP / (Count_TP + Count_FP),
+                  Specificity = Count_TN / (Count_TN + Count_FN),
+                  MissClass_Rate = (Count_FP + Count_FN)/(Count_FP + Count_FN + Count_TP + Count_TN), 
+                  Accuracy = (Count_TP + Count_TN) / 
+                    (Count_TP + Count_TN + Count_FN + Count_FP)) %>%
+        mutate(Threshold = round(x,2))
+      
+      all_prediction <- rbind(all_prediction,this_prediction)
+      x <- x + .01
+    }
+    return(all_prediction)
+  }
+  else if (!missing(group)) { 
+    while (x <= 1) {
+      this_prediction <- data.frame()
+      
+      this_prediction <-
+        data %>%
+        mutate(predclass = ifelse(!!predictedProbs > x, 1,0)) %>%
+        group_by(!!group) %>%
+        count(predclass, !!observedClass) %>%
+        summarize(Count_TN = sum(n[predclass==0 & !!observedClass==0]),
+                  Count_TP = sum(n[predclass==1 & !!observedClass==1]),
+                  Count_FN = sum(n[predclass==0 & !!observedClass==1]),
+                  Count_FP = sum(n[predclass==1 & !!observedClass==0]),
+                  Rate_TP = Count_TP / (Count_TP + Count_FN),
+                  Rate_FP = Count_FP / (Count_FP + Count_TN),
+                  Rate_FN = Count_FN / (Count_FN + Count_TP),
+                  Rate_TN = Count_TN / (Count_TN + Count_FP),
+                  Sensitivity = Count_TP / (Count_TP + Count_FP),
+                  Specificity = Count_TN / (Count_TN + Count_FN),
+                  MissClass_Rate = (Count_FP + Count_FN)/(Count_FP + Count_FN + Count_TP + Count_TN),
+                  Accuracy = (Count_TP + Count_TN) / 
+                    (Count_TP + Count_TN + Count_FN + Count_FP)) %>%
+        mutate(Threshold = round(x,2))
+      
+      all_prediction <- rbind(all_prediction,this_prediction)
+      x <- x + .01
+    }
+    return(all_prediction)
+  }
+}
+
+#prepping
 fit <-mylogit$fitted.values
-hist(fit)
-
 
 #a is a matrix combining the vectors containing y and y-hat in matrix a; first variable is
 #DRINKING_D, which is y; second variable is fit, which is y-hat
@@ -289,65 +371,96 @@ a <- cbind(mydata$DRINKING_D, fit)
 
 #b is matrix a, just sorted by the variable fit
 b <- a[order(a[,2]),]
+b=as.data.frame(b)
+colnames(b) <- c("Observed.DRINKING_D","Probability.DRINKING_D")
 
-#Calculating variable c which is 1 if y-hat (second column of matrix b) is greater
-#than or equal to 0.05 and 0 otherwise.
+    #### Don't Need This Stuff, that is folded ----
+    
+    #Calculating variable c which is 1 if y-hat (second column of matrix b) is greater
+    #than or equal to 0.05 and 0 otherwise.
+    
+    #Other cut-offs can be used here!
+    c <- (b[,2] >= 0.05)
+    
+    
+    #Creating matrix d which merges matrixes b and c
+    d <- cbind(b,c)
+    
+    #Let's label the columns of matrix d for easier reading
+    colnames(d) <- c("Observed.DRINKING_D","Probability.DRINKING_D","Prob.Above.Cutoff")
+    
+    #Converting matrix to data frame
+    e=as.data.frame(d)
+    e%>%kable()%>%kable_material_dark()
+    
+    #Cross-tabulation
+    CrossTable(e$Prob.Above.Cutoff, e$Observed.DRINKING_D, prop.r=FALSE,prop.chisq=FALSE, chisq=FALSE,prop.t=FALSE)
+# ----
 
-#Other cut-offs can be used here!
-c <- (b[,2] >= 0.05)
-
-#Creating matrix d which merges matrixes b and c
-d <- cbind(b,c)
-
-#Let's label the columns of matrix d for easier reading
-colnames(d) <- c("Observed.DRINKING_D","Probability.DRINKING_D","Prob.Above.Cutoff")
-
-#Converting matrix to data frame
-e=as.data.frame(d)
-
-#Cross-tabulation
-CrossTable(e$Prob.Above.Cutoff, e$Observed.DRINKING_D, prop.r=FALSE,prop.chisq=FALSE, chisq=FALSE,prop.t=FALSE)
+whichThreshold <- 
+  iterateThresholds(
+    data=b, observedClass = Observed.DRINKING_D, predictedProbs = Probability.DRINKING_D)
 
 
-#ROC Curve
+# looking for these threshes:
+
+ourthresh <- whichThreshold %>%filter(Threshold == 0.02 | Threshold == 0.03|Threshold == 0.05|(Threshold > 0.06 & Threshold < 0.11)| Threshold == 0.15 | Threshold == 0.2 | Threshold == 0.5)%>%
+  dplyr::select(Threshold, Sensitivity, Specificity, MissClass_Rate)
+
+ourthresh%>%kable(format = "html", align = "llll", caption = "Goodness of Fit Metrics",
+                  col.names = c("Cut Off Value", "Sensitivity", "Specificity", "Missclassification Rate"))%>%
+  kable_material("hover")%>%kable_styling(full_width=F)%>% 
+  row_spec(10, bold = T,background = "#f0d560")
+
+
+
+
+
+  ## 3.a.iv-v ---- 
+#ROC Curve 
 #For more info, see: https://hopstat.wordpress.com/2014/12/19/a-small-introduction-to-the-rocr-package/
 
 #Here, predictions are estimated probabilities (i.e., p or y-hat values)
 #Also, labels are actual y-values
 
 
-#a <- cbind(mydata$DRINKING_D, fit)
+a <- cbind(mydata$DRINKING_D, fit)
+
 #From above, we see that matrix a has 2 columns: 
-#1. The first one is mydata$DRINKING_D, which are actual 
-#values of y (i.e., labels)
-#2. The second one is fit, which are predicted, or fitted values
-#of y (i.e., predictions)
+  #1. The first one is mydata$DRINKING_D, which are actual 
+  #values of y (i.e., labels)
+  #2. The second one is fit, which are predicted, or fitted values
+  #of y (i.e., predictions)
 
 #Let's make the names of the variables easy to understand
+
 colnames(a) <- c("labels","predictions")
 head(a)
-roc <- as.data.frame(a)
 
+roc <- as.data.frame(a)
 pred <- prediction(roc$predictions, roc$labels)
-#Below, tpr = true positive rate, another term for sensitivity
-#fpr = false positive rate, or 1-specificity
+
+
+  #Below, tpr = true positive rate, another term for sensitivity
+  #fpr = false positive rate, or 1-specificity
+
 roc.perf = performance(pred, measure = "tpr", x.measure="fpr")
 plot(roc.perf)
 abline(a=0,b=1)
 
-#Optimal cut-point, if you want to weigh specificity and
-#sensitivity equally.
-#There are a couple ways to identify the optimal cut point.
-#One is the so-called Youden Index, which identifies the cut-off
-#point for which (sensitivity + specificity) is maximized.
-
-#Another one, calculated using the code below, is the cut-off
-#value for which the ROC curve has the minimum distance from
-#the upper left corner of the graph, where specificity = 1 and
-#sensitivity = 1. (This is just a different way of maximizing 
-#specificity and sensitivity). This is where the 
-#d = (x - 0)^2 + (y-1)^2
-#in the code below comes in.
+#Optimal cut-point:
+  #if you want to weigh specificity and sensitivity equally.
+  #There are a couple ways to identify the optimal cut point.
+  #One is the so-called Youden Index, which identifies the cut-off
+  #point for which (sensitivity + specificity) is maximized.
+  
+  #Another one, calculated using the code below, is the cut-off
+  #value for which the ROC curve has the minimum distance from
+  #the upper left corner of the graph, where specificity = 1 and
+  #sensitivity = 1. (This is just a different way of maximizing 
+  #specificity and sensitivity). This is where the 
+  #d = (x - 0)^2 + (y-1)^2
+  #in the code below comes in.
 
 opt.cut = function(perf, pred){
   cut.ind = mapply(FUN=function(x, y, p){
@@ -357,9 +470,12 @@ opt.cut = function(perf, pred){
       cutoff = p[[ind]])
   }, perf@x.values, perf@y.values, pred@cutoffs)
 }
-#This will print the optimal cut-off point and the corresponding
-#specificity and sensitivity 
-print(opt.cut(roc.perf, pred))
+
+  #This will print the optimal cut-off point and the corresponding
+  #specificity and sensitivity 
+
+print(opt.cut(roc.perf, pred))%>%kable(format = "html", align = "ll", caption = "Optimal Cutoff")%>%
+  kable_material("hover")%>%kable_styling(full_width=F)%>%row_spec(3, bold=TRUE, background = "#f0d560")
 
 #Area under the curve
 #Source: http://gim.unmc.edu/dxtests/roc3.htm
@@ -379,4 +495,41 @@ print(opt.cut(roc.perf, pred))
 #be statisticians who will say that area > .7 is just fine.
 
 auc.perf = performance(pred, measure ="auc")
-auc.perf@y.values
+print(auc.perf@y.values)%>%kable(col.names= c("Area Under the Curve"), format = "html", align = "c")%>%kable_material()%>%kable_styling(full_width=F, position = "center")
+
+
+
+#Step 3 ROUND TWO  -------------------------------------
+
+## 3.a.i ROUND TWO ---- 
+#Logistic Regression
+mylogit2 <- glm(DRINKING_D ~ FATAL_OR_M + OVERTURNED + CELL_PHONE + SPEEDING + AGGRESSIVE + DRIVER1617 + DRIVER65PLUS, data=mydata, family = "binomial")
+
+## 3.a.ii ROUND TWO---- 
+# SAVING LOGSITIC REGRESSION OUTPUT AS LOGITOUTPUT
+logitoutput2<-summary(mylogit2)
+
+# SAVING COEFFS ESTIMATES, STANDARD ERROR, Z-VALUES, AND P-VALUES AS LOGITCOEFFS
+logitcoeffs2<-logitoutput2$coefficients
+logitcoeffs2
+
+# SAVING ODDS RATIONS AND 95% CONFIDENCE INTERVALS FOR THE ODDS RATIOS AS OR_CI
+or_ci2<- exp(cbind(OR=coef(mylogit2), confint(mylogit2)))
+
+# APPENDING COEFFS WITH ODDS RATIOS AND CONFIDENCE INTERVALS
+finallogitoutput2<- cbind(logitcoeffs2, or_ci2)
+finallogitoutput2
+
+# MAKING IT PRETTY
+
+finallogitoutput2%>%kable(format = "html", align = "rlllllll", caption = "Logit Results: Round Two")%>%
+  kable_paper("hover")%>%kable_styling(full_width=F)
+
+## Final Step AIC -------------------------------------------
+
+
+aic <- AIC(mylogit, mylogit2)%>%as.data.frame()
+rownames(aic) <- NULL    
+aic%>%mutate(Model = c("Logit 1", "Logit 2"))%>% rename("Degrees of Freedom" = df)%>%
+  dplyr::select(Model, "Degrees of Freedom", AIC)%>%kable(format = "html", align = "lll", caption = "AIC Results")%>%
+  kable_paper("hover")%>%kable_styling(full_width=F)
