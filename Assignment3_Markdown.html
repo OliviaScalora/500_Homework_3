@@ -65,7 +65,7 @@ if (window.hljs) {
 
 
 
-<link rel="stylesheet" href="data:text/css,h1%7Bfont%2Dweight%3A%20bold%3Bfont%2Dfamily%3A%20Helvetica%3B%7Dbody%7Bfont%2Dfamily%3A%20Helvetica%3Bfont%2Dsize%3A%2012pt%3B%7D" type="text/css" />
+<link rel="stylesheet" href="data:text/css,h1%7Bfont%2Dweight%3A%20bold%3Bfont%2Dfamily%3A%20Helvetica%3B%7Dbody%7Bfont%2Dfamily%3A%20Helvetica%3Bfont%2Dsize%3A%2012pt%3B%7D%2EisDisabled%20%7Bcolor%3A%20currentColor%3Btext%2Ddecoration%3A%20none%3Bpointer%2Devents%3A%20none%3B%7D" type="text/css" />
 
 
 
@@ -265,27 +265,59 @@ div.tocify {
 
 <div id="introduction" class="section level1">
 <h1>INTRODUCTION</h1>
-<p><strong>a) State the problem, the importance of the problem, and the setting of the analysis (Philadelphia)</strong></p>
-<p><strong>b) Speculate as to why the predictors we’re using might be associated with the response variable.</strong></p>
-<p><strong>c) Indicate that you will be using R to run logistic regression for the analysis.</strong></p>
+<p>Approximately one person every 51 minutes dies in motor vehicle crashes that involve an alcohol-impaired driver, according to the US Department of Transportation. In addition to loss of life and other major injuries, the economic impact of drunk driving is estimated to be more than $59 billion annually, according to a study recently conducted by the National Highway Traffic Safety Administration. The goal of this analysis is to use logistic regression to identify predictors of car crashes related to drunk driving using R and a data set from the City of Philadelphia which contains all 53,260 car accidents in Philadelphia from 2008 - 2012. The data set is then filtered to include 43,364 observations that occurred in Philadelphia residential block groups. The crashes are geocoded, allowing us to spatially join our crash data to the 2000 Census block group level data set. Each crash point will then include the median household income and percent of individuals with at least a bachelor’s degree in the block group where the crash took place. The categorical variables contained in our original data set are all additional details about each car crash, which we assume will have some level of association with whether or not the crash involved a drunk driver. The predictors joined from the census data are continuous variables that are more indicative of the area in which the crash occurred as opposed to the details of the crash itself. We are interested in the correlation between block group level variables that indicate wealth and education and drunk driving occurrences.</p>
+<p>The original car crash data set contains the following variables.</p>
+<ul>
+<li><strong><code>CRN</code></strong> Crash Record Number<br />
+</li>
+<li><strong><code>DRINGING_D</code></strong> Drinking driver indicator (1 = Yes, 0 = No)<br />
+</li>
+<li><strong><code>COLLISION</code></strong> Collision category that defines the crash (0 = Non collision, 1 = Rear end, 2 = Head on, 3 = Rear to rear, 4 = Angle, 5 = Sideswipe(same direct.), 6 = Sideswipe (opposite direct.), 7 = Hit fixed object, 8 = Hit pedestrian, 9 = Other or unknown)<br />
+</li>
+<li><strong><code>FATAL_OR_M</code></strong> Crash resulted in a fatality or major injury (1 = Yes, 0 = No)<br />
+</li>
+<li><strong><code>OVERTURNED</code></strong> Crash involved an overturned vehicle (1 = Yes, 0 = No)<br />
+</li>
+<li><strong><code>CELL_PHONE</code></strong> Driver was using cell phone (1 = Yes, 0 = No)<br />
+</li>
+<li><strong><code>SPEEDING</code></strong> Crash involved speeding car (1 = Yes, 0 = No)<br />
+</li>
+<li><strong><code>AGGRESSIVE</code></strong> Crash involved aggressive driving (1 = Yes, 0 = No)<br />
+</li>
+<li><strong><code>DRIVER1617</code></strong> Crash involved at least one driver who was 16 or 17 years old(1 = Yes, 0 = No)<br />
+</li>
+<li><strong><code>DRIVER56PLUS</code></strong> Crash involved at least one driver who was at least 65 years old(1 = Yes, 0 = No)</li>
+</ul>
+<p>After joined with the Census block group data, we gain the following variables.</p>
+<ul>
+<li><strong><code>AREAKEY</code></strong> ID of the Census Block Group where the crash took place<br />
+</li>
+<li><strong><code>PCTBACHMOR</code></strong> % of individuals 25 years of age or older who have at least a bachelor’s degree in the Census Block Group where the crash took place<br />
+</li>
+<li><strong><code>MEDHHINC</code></strong> Median household income in the Census block Group where the crash took place</li>
+</ul>
 </div>
 <div id="methods" class="section level1">
 <h1>METHODS</h1>
-<p><strong>a) Explain the problems with using OLS regression when the dependent variable is binary</strong></p>
 <p>In OLS regression, the dependent variable is continuous and hopefully normal. And the beta coefficients are interpreted as the amount that dependent variable changes when the predictor increases by 1 unit. For example, <span class="math inline">\(\beta^1\)</span> is the amount by which variable Y (our dependent variable) changes when <span class="math inline">\(x^1\)</span> increases by 1 unit. But when dealing with a binary <span class="math inline">\(Y\)</span> that has only two outcomes, 0 and 1, a one unit increase in <span class="math inline">\(x^1\)</span> resulting in an <span class="math inline">\(\beta^1\)</span> increase in <span class="math inline">\(Y\)</span> makes no sense. Our binary dependent variable can only ever change from 0 to 1, or from 1 to 0. Further, even when trying to get around the issue of predicting <span class="math inline">\(Y\)</span> and instead predicting the probability that <span class="math inline">\(Y=1\)</span>, linear regression predicts values of <span class="math inline">\(Y\)</span> that range between <span class="math inline">\(-\infty\)</span> to <span class="math inline">\(+\infty\)</span>. This also makes little sense, because probabilities must range between 0 and 1, and this linear model does not have such constraints.</p>
-<p><strong>b) Explain how logistic regression works around these issues.</strong></p>
 <p>If we are able to stay within the range of 0 to 1, we can not only talk in terms of probability, but also in terms of odds which can be more approachable for most people. While probability is calculated as the number of desirable outcomes divided by the number of all possible outcomes, odds are the amount of desirable outcomes divided by the amount of the undesirable outcomes. In Logistic Regression, odds can be calculated as <span class="math inline">\(\frac{P(Y=1)}{1-P(Y=1)}\)</span>.</p>
 <p>We can also look at odd ratios, or the ratio of odds of an outcome under one set of conditions compared to the odds of an outcome under another set of conditions. In multiple Logistic Regression, we can calculate the odds ratio by exponentiating the beta coefficients from the regression. The odds ratio can be interpreted as the extent to which the odds of <span class="math inline">\(Y=1\)</span> changes as the predictor increases by 1 unit.</p>
 <p>In our first logistic model, we included the following predictors:</p>
 <ul>
-<li>whether crash resulted in fatality of major injury(<code>FATAL_OR_M</code>)</li>
-<li>whether crash involved an overturned vehicle - whether driver was using a cellphone</li>
-<li>whether crash involved speeding car</li>
-<li>whether crash involved aggressive driving</li>
-<li>whether crash involved at least one drive who was 16 or 17 years old (<code>DRIVER1617</code>)</li>
-<li>whether crash involved at least one driver who was at least 65 year old (<code>DRIVER65PLUS</code>)</li>
-<li>percent of individuals 25 years of age or older who have at least a bachelors degree</li>
-<li>in the census block group where the crash took place (<code>PCTBACHMOR</code>)</li>
+<li>whether crash resulted in fatality of major injury(<code>FATAL_OR_M</code>)<br />
+</li>
+<li>whether crash involved an overturned vehicle - whether driver was using a cellphone (<code>CELL_PHONE</code>)<br />
+</li>
+<li>whether crash involved speeding car (<code>SPEEDING</code>)<br />
+</li>
+<li>whether crash involved aggressive driving (<code>AGGRESSIVE</code>)<br />
+</li>
+<li>whether crash involved at least one drive who was 16 or 17 years old (<code>DRIVER1617</code>)<br />
+</li>
+<li>whether crash involved at least one driver who was at least 65 year old (<code>DRIVER65PLUS</code>)<br />
+</li>
+<li>percent of individuals 25 years of age or older who have at least a bachelors degree in the census block group where the crash took place (<code>PCTBACHMOR</code>)<br />
+</li>
 <li>median household income in the census block group where the crash took place (<code>MEDHHINC</code>)</li>
 </ul>
 <p>Below are the equations in both the Logit form and the Logistic form.</p>
@@ -295,37 +327,106 @@ div.tocify {
 <p><strong>Logistic Regression Equation</strong></p>
 <p><span class="math display">\[P(DRINKING\_D=1) = \frac{e^{\beta_0+\beta_{FATAL\_OR\_M}+\beta_{OVERTURNED}+\beta_{CELLPHONE}+\beta_{SPEEDING}+\beta_{AGGRESSIVE}+\beta_{DRIVER1617}+\beta_{DRIVER65PLUS}+\beta_{PCTBACHMOR}+\beta_{MEDHHINC}}}{1+e^{\beta_0+\beta_{FATAL\_OR\_M}+\beta_{OVERTURNED}+\beta_{CELLPHONE}+\beta_{SPEEDING}+\beta_{AGGRESSIVE}+\beta_{DRIVER1617}+\beta_{DRIVER65PLUS}+\beta_{PCTBACHMOR}+\beta_{MEDHHINC}}}\]</span></p>
 <p>The Logistic Regression Equation is essentially the Logit equation reorganized to solve for <span class="math inline">\(p\)</span>, or the <span class="math inline">\(P(Y=1)\)</span>. Because the Logistic Regression equation has been reorganized to solve for <span class="math inline">\(p\)</span>, we can use it to estimate the probability of <span class="math inline">\(Y=1\)</span> directly, instead of estimating the log odds of <span class="math inline">\(Y=1\)</span>, as the Logit function does.</p>
-<p>Logistic Regression acts as a translator function of a linear regression that predicts probability, to get around the issue that kind of regression poses. In the explanation above, though the range of possible probabilities (from <span class="math inline">\(-\infty\)</span> to <span class="math inline">\(+\infty\)</span>) doesn’t make sense, intuitively there are somethings we can glean from it. If the linear probability model predits a 1.10 = 110% chance of <span class="math inline">\(Y=1\)</span>, then we might expect there would be a very large probability of <span class="math inline">\(Y\)</span> actually equaling 1. And if the predicted probability were negative, e.g. -0.50 = -50% chance of <span class="math inline">\(Y=1\)</span>, then we would expect there to be a small probability of <span class="math inline">\(Y\)</span> actually being equal to 1. While the range of probabilities provided by a linear probability model do not make sense, Logistic Regression acts a translator function, translating those outputs into a range that does makes sense, a range of 0 to 1.</p>
+<p>Logistic Regression acts as a translator function of a linear regression that predicts probability, to get around the issue that kind of regression poses. In the explanation above, though the range of possible probabilities (from <span class="math inline">\(-\infty\)</span> to <span class="math inline">\(+\infty\)</span>) doesn’t make sense, intuitively there are somethings we can glean from it. If the linear probability model predicts a 1.10 = 110% chance of <span class="math inline">\(Y=1\)</span>, then we might expect there would be a very large probability of <span class="math inline">\(Y\)</span> actually equaling 1. And if the predicted probability were negative, e.g. -0.50 = -50% chance of <span class="math inline">\(Y=1\)</span>, then we would expect there to be a small probability of <span class="math inline">\(Y\)</span> actually being equal to 1. While the range of probabilities provided by a linear probability model do not make sense, Logistic Regression acts a translator function, translating those outputs into a range that does makes sense, a range of 0 to 1.</p>
 <p>For example, Logistic Regression would translate values as such: the closer the <span class="math inline">\(\hat{y}\)</span> value from the linear probability regression model is to <span class="math inline">\(-\infty\)</span>, the closer the predicted probability is to 0. And, the closer the <span class="math inline">\(\hat{y}\)</span> value from the linear probability regression model is to <span class="math inline">\(+\infty\)</span>, the closer the predicted probability is to 1. This leave us with a range from 0 to 1, where no predicted probabilities are greater than 1 or less than 0.</p>
-<p><strong>c) Describe the hypothesis that is tested for each predictor</strong></p>
 <p>Under logistic regression we test our hypothesis for each predictor. Our null hypothesis is <span class="math inline">\(H_0: \beta_i = 0 (OR_i = 1)\)</span> and our alternative hypothesis is <span class="math inline">\(H_a:\beta_i \neq 0 (OR_i \neq 1)\)</span>. Additionally, our null and alternative hypothesis include the <span class="math inline">\(OR\)</span> because most statisticians prefer to work with odds ratios. Odds ratios can be calculated by exponentiation the coefficients.</p>
 <p>In logistic regression, when we take the quantity <span class="math inline">\(\frac{\hat{\beta_i}-E(\hat{\beta_i})}{\sigma_{\hat{\beta_i}}} = \frac{\hat{\beta_i}-0}{\sigma_{\hat{\beta_i}}} = \frac{\hat{\beta_i}}{\sigma_{\hat{\beta_i}}}\)</span>, the quantity has a standard normal distribution. That means, <span class="math inline">\(\frac{\hat{\beta_i}}{\sigma_{\hat{\beta_i}}}=z\)</span>, and in the context of Logistic Regression, this quantity is sometimes called the Wald Statistic.</p>
-<p><strong>d) Talk about how you assess the quality of model fit.</strong></p>
 <p>When thinking about the quality of our logistic regression model’s fit, we can calculate an R-squared value, but it’s not very useful and does not have the same interpretation as in OLS. This means that in Logistic Regression we cannot interpret R-squared as the % of variance explained by the model, like we can in OLS. The only interpretation we can make is that the higher the R-squared, the better.</p>
 <p>However, just as with other models, we can use the Akaike Information Criterion to compare different logistic models, or even compare logistic models to other kinds of models. The Akaike Information Criterion, or AIC, evaluates the relative quality of statistical models by estimating prediction error. The AIC is calculated using the maximum likelihood estimate and the number of predictors used in the model. This means that in comparing the quality of two statistical models, the AIC penalizes the model for adding additional predictors. The lower the AIC, the better model, if there is a difference in AIC of least 3 units. <a href="http://www.stat.ucla.edu/~rgould/120w05/handouts/lect20.pdf">UCLA, Lecture 20: Model Selection</a></p>
 <p>For Logistic Regression we can also look at the specificity, sensitivity and the misclassification rate. Sensitivity is calculated as: <span class="math display">\[\frac{True Positives}{(True Positives + False Positives)}\]</span> Specificity is calculated as: <span class="math display">\[\frac{True Negatives}{(True Negatives + False Negatives)}\]</span> And the misclassification rate is calculated as: <span class="math display">\[\frac{False Negatives+False Positives}{(True Negatives+ True Positives + False Positives+ False Negatives)}\]</span> Sensitivity and specificity are essentially the rate at which we correctly predict True Positives and True Negatives. Ideally both the sensitivity and specificity will be high. The misclassification rate however, is the overall rate that incorrectly predict both 1 and 0. Ideally, the misclassification rate will be low.</p>
 <p>In Logistic Regression, the fitted or predicted values of <span class="math inline">\(y\)</span>, i.e. <span class="math inline">\(\hat{y}\)</span>, are calculated as the probability that <span class="math inline">\(Y=1\)</span>. Ideally, our model will be able to predict a high probability of <span class="math inline">\(Y=1\)</span> when Y is actually 1. And ideally, our model will be able to predict a low probability of <span class="math inline">\(Y=1\)</span> when Y is actually 0, meaning it’s not 1. But ultimately, we decide what is a high (enough) probability to be considered a prediction of <span class="math inline">\(Y=1\)</span> and we decide what is low (enough) to be considered a prediction of <span class="math inline">\(Y\neq1\)</span>. The decision is where to place the cutoff threshold. For example, if we decide that the cutoff threshold should be 0.50, then any <span class="math inline">\(\hat{y}\)</span> &lt; 0.50 will be considered a prediction of <span class="math inline">\(Y\neq1\)</span> and any <span class="math inline">\(\hat{y}\)</span> &gt; 0.50 will be considered a prediction of <span class="math inline">\(Y=1\)</span>.</p>
-<p>What we correctly predict as <span class="math inline">\(Y=1\)</span> is called a True Positive and what we incorrectly predict as <span class="math inline">\(Y=1\)</span> is called a False Positive. Together those two values are used to calculate the Sensitivity, or the True Positive rate. Similarly, what we correctly predict as <span class="math inline">\(Y\neq1\)</span> is called a True Negative and what we incorrectly predict as <span class="math inline">\(Y\neq1\)</span> is called a False Negative. Together those two values are used to calculate the Specificity, or the True Negative rate. And lastly, all four values, True Positive, True Negative, False Negative, and False Positive are used to calculate the missclassification rate.</p>
-<p>As noted above, which <span class="math inline">\(\hat{y}\)</span> values are considered to be correctly or incorrectly predicted depends on where we set our cutoff threshold. Each threshold has it’s own upsides and downsides. A threshold of 0.06 may result in a high True Positive rate, but it may also result in a high False Positive Rate. Essentially, in this scenario, at the cost counting most <span class="math inline">\(\hat{y}\)</span> as predicting <span class="math inline">\(Y=1\)</span>, you might correctly predict all of the instances where y is actually 1, but you will also incorrectly predict where y is actually 0.</p>
+<p>What we correctly predict as <span class="math inline">\(Y=1\)</span> is called a True Positive and what we incorrectly predict as <span class="math inline">\(Y=1\)</span> is called a False Positive. Together those two values are used to calculate the Sensitivity, or the True Positive rate. Similarly, what we correctly predict as <span class="math inline">\(Y\neq1\)</span> is called a True Negative and what we incorrectly predict as <span class="math inline">\(Y\neq1\)</span> is called a False Negative. Together those two values are used to calculate the Specificity, or the True Negative rate. And lastly, all four values, True Positive, True Negative, False Negative, and False Positive are used to calculate the misclassification rate.</p>
+<p>As noted above, which <span class="math inline">\(\hat{y}\)</span> values are considered to be correctly or incorrectly predicted depends on where we set our cutoff threshold. Each threshold has it’s own upsides and downsides. A threshold of 0.06 may result in a high True Positive rate, but it may also result in a high False Positive Rate. Essentially, in this scenario, at the cost of counting most <span class="math inline">\(\hat{y}\)</span> as predicting <span class="math inline">\(Y=1\)</span>, you might correctly predict all of the instances where y is actually 1, but you will also incorrectly predict where y is actually 0.</p>
 <p>To help in making the best decision of where to place the cutoff threshold, we can use an ROC curve. The ROC curve shows the quality of predictions of various thresholds by plotting the True Positive Rate (Sensitivity) versus the False Positive Rate for every possible cut-off threshold. The best threshold can be determined by optimizing sensitivity and specificity. In the case that the model’s use benefits from having both sensitivity and specificity maximized, we can use the Youden Index to identify an optimal threshold mathematically. Alternatively, given that specificity and sensitivity should be maximized, a threshold can be determined by identifying the point of the curve where it has the minimum distance from the upper left corner of the graph, i.e. where both specificity and sensitivity are equal to 1. We will be using the latter approach in R.</p>
 <p>Another helpful metric for determining the quality of our model is the area under the ROC curve (AUC). The value of the AUC should be above 0.60 if the model is any use at all. An AUC between 0.50 and 0.60 is a fail, between .60 and .70 is poor, between 0.70 and 0.80 is fair, between .80 and .90 is good, and in some cases an AUC of .90 and 1 is excellent. Although depending on the model’s use, an AUC of 1 might not be good, because it would mean that the model is overfit and would not predict well on unseen data. Additionally, in real world cases, an AUC greater than 0.7 is generally good.</p>
-<p><strong>e) Talk about the assumptions of logistic regression.</strong></p>
 <p>The first assumption of Logistic Regression is that our dependent variable be binary. Additionally, our observations must be independent of each other, there should be no severe multicollinearity. Further unlike in OLS, Logistic Regression does not require the assumption that there needs to be a linear relationship between the dependent variable and each predictor, nor does it assume homoscedasticity or that the residuals be normal. However, larger samples are needed for Logistic Regression because Maximum Likelihood Estimation is used instead of least squares to estimate regression coefficients. We need at least 50 observations per predictor for Logistic Regression, compared to only 10 per predictor for OLS.</p>
-<p><strong>f) Describe the exploratory analyses that statisticians may want to do before running logistic regression.</strong></p>
 <p>Before we run our Logistic Regression Model, it is a good idea to run cross-tabulations between the dependent variable and binary predictors, to see whether there is an association between them. In doing so, we may identify a “perfect prediction problem” where only one value of a predictor is associated with only one value of the response variable. If this problem were identified, we would simply remove the predictor for which this is a problem and continue with the model.</p>
 <p>Additionally, the Chi-Square test is the appropriate statistical test for examining the association between two categorical variables. In the Chi-Square test, our null and alternative hypotheses are as such:</p>
-<p><span class="math inline">\(H_0\)</span>: the proportion of fatalities for crashes that involve drunk drivers is the same as the proportion of fatalities for crashes that do not involve drunk drivers.</p>
-<p><span class="math inline">\(H_a\)</span>: the porportion of fatalities for crashes that involve drunk drivers is different than the proportion of fatalities for crashes that do not involve drunk drivers.</p>
+<p><a name="chi" class="isDisabled"> <strong><span class="math inline">\(H_0\)</span>: the proportion of fatalities for crashes that involve drunk</strong> <strong>drivers is the same as the proportion of fatalities for crashes that do</strong> <strong>not involve drunk drivers.</strong></p>
+<p><span class="math inline">\(H_a\)</span>: <strong>the proportion of fatalities for crashes that involve drunk</strong> <strong>drivers is different than the proportion of fatalities for crashes that</strong> <strong>do not involve drunk drivers.</strong> </a></p>
 <p>A high value of the <span class="math inline">\(\chi^2\)</span> statistic with a p-value &lt; 0.05, would suggest that there is evidence to reject the null hypothesis for the alternative. It would also suggest that there is an association between drunk driving fand crash fatalities.</p>
 <p>Before we run our Logistic Regression Model we should also examine whether the means of the continuous predictors seem to differ for the different levels of the dependent variable. The independent samples t-test is the appropriate statistical test to do this, to examine if there are significant differences in mean values of our continuous variables, <code>PCTBACHMOR</code> and <code>MEDHHINC</code>, for crashes that involved drunk driving and those that didn’t. In the independent samples t-test, our null and alternative hypotheses are as such:</p>
-<p><span class="math inline">\(H_0\)</span>: average values of each continuous variable are the same for crashes that involve drunk drivers and crashes that did not.</p>
-<p><span class="math inline">\(H_a\)</span>: average values of each continuous variable are different for crashes that involve drunk drivers and crashes that did not.</p>
+<p><a name="ttest" class="isDisabled"> <strong><span class="math inline">\(H_0\)</span>: average values of each continuous variable are the same for</strong> <strong>crashes that involve drunk drivers and crashes that did not.</strong></p>
+<p><strong><span class="math inline">\(H_a\)</span>: average values of each continuous variable are different for</strong> <strong>crashes that involve drunk drivers and crashes that did not.</strong> </a></p>
 <p>A high value of the t-statistic with a p-value &lt; 0.05 would suggest that there is evidence to reject the null hypothesis in favor of the alternative.</p>
 <p>We also took a look at the pearson correlations between all the predictors (both binary and continuous) to determine if there was evidence of severe multicollinearity.</p>
 </div>
 <div id="results" class="section level1">
 <h1>RESULTS</h1>
-<p><strong>a) Present and discuss the results of the exploratory analyses.</strong></p>
+<div id="exploratory-analysis" class="section level3">
+<h3>EXPLORATORY ANALYSIS</h3>
+<div style="float:right; position: relative; padding: 15px;">
+<pre class="r"><code>DRINKING_D.tab &lt;- table(mydata$DRINKING_D)
+prop.table&lt;- prop.table(DRINKING_D.tab)
+
+bind_cols(data.frame(Description = c(
+  &quot;No Alcohol Involved&quot;,
+  &quot;Alcohol Involved&quot;)))%&gt;%
+bind_cols(as.data.frame(DRINKING_D.tab)%&gt;%
+  cbind(as.data.frame(prop.table)$Freq))%&gt;%
+  kable(format = &quot;html&quot;, 
+        align = &quot;rlrr&quot;, 
+        caption = &quot;Table 1&quot;,
+        col.names = c(&#39;Drinking_D&#39;,&#39;&#39;,&#39;Count&#39;,&#39;Prop&#39;))%&gt;%
+  column_spec(1,bold = TRUE,
+              background = &#39;#f1f1f1&#39;)%&gt;%
+  column_spec(2,bold = TRUE,
+              background = &#39;#f1f1f1&#39;)%&gt;%
+  kable_paper()%&gt;%kable_styling(full_width=F,
+                                bootstrap_options = &quot;hover&quot;) </code></pre>
+<table class=" lightable-paper table table-hover" style="font-family: &quot;Arial Narrow&quot;, arial, helvetica, sans-serif; margin-left: auto; margin-right: auto; width: auto !important; margin-left: auto; margin-right: auto;">
+<caption>
+Table 1
+</caption>
+<thead>
+<tr>
+<th style="text-align:right;">
+Drinking_D
+</th>
+<th style="text-align:left;">
+</th>
+<th style="text-align:right;">
+Count
+</th>
+<th style="text-align:right;">
+Prop
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:right;font-weight: bold;background-color: #f1f1f1 !important;">
+No Alcohol Involved
+</td>
+<td style="text-align:left;font-weight: bold;background-color: #f1f1f1 !important;">
+0
+</td>
+<td style="text-align:right;">
+40879
+</td>
+<td style="text-align:right;">
+0.9426944
+</td>
+</tr>
+<tr>
+<td style="text-align:right;font-weight: bold;background-color: #f1f1f1 !important;">
+Alcohol Involved
+</td>
+<td style="text-align:left;font-weight: bold;background-color: #f1f1f1 !important;">
+1
+</td>
+<td style="text-align:right;">
+2485
+</td>
+<td style="text-align:right;">
+0.0573056
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>We first examine the proportion of crashes that involve drunk driving in our observations. Table 1 shows the count and the proportion of crashes that involve drunk driving where 0 means no alcohol was involved and 1 means alcohol was involved. The proportion of crashes that don’t involve alcohol, calculated by dividing the number of crashes not involving alcohol by the total number of crashes, is much higher at just over 94% compared to compared to those that do at just under 6%.</p>
+<p>We next look at the cross tabulations of our dependent variable with each binary predictor in Table 2. Here, we are examining the number and percentage of crashes not involving alcohol, and crashes involving alcohol where each predictor is true. For example, row one tells us that out of the 1300 crashes that resulted in fatality or major injury, 119 (0.27%) did not involve alcohol and 1181 (2.72%) did. For each predictor we ran the Chi-Square test to determine whether the distribution of our dependent categorical variable varies with respect to the values of the predictor categorical variables. The p-value for each predictor indicates whether or not we can reject or fail to reject our null hypothesis <em>(defined for <code>FATAL_OR_M</code> in <a href="#chi">Methods</a>)</em>. We see that each binary predictor has a p-value lower than 0.05 which suggests that there is evidence to reject the null hypothesis in favor of the alternative, and that there’s an association between all of our predictor variables and the dependent variable except for <code>CELL_PHONE</code>. This means there is not enough variance in the values of our binary dependent variable with respect to drivers using a cell phone at the time of the crash.</p>
 <pre class="r"><code>#2.a
 #Alternative way of tabulating (and obtaining proportions for each category)
 DRINKING_D.tab &lt;- table(mydata$DRINKING_D)
@@ -416,7 +517,10 @@ CrossTable&lt;-CrossTabley%&gt;%mutate(Total_N = N+N_1,
     Cross_Agg[[&quot;chisq&quot;]][[&quot;p.value&quot;]],
     Cross_1617[[&quot;chisq&quot;]][[&quot;p.value&quot;]],
     Cross_65P[[&quot;chisq&quot;]][[&quot;p.value&quot;]])))</code></pre>
-<table class=" lightable-paper" style="font-family: &quot;Arial Narrow&quot;, arial, helvetica, sans-serif; margin-left: auto; margin-right: auto;">
+<table class=" lightable-paper table table-hover" style="font-family: &quot;Arial Narrow&quot;, arial, helvetica, sans-serif; margin-left: auto; margin-right: auto; margin-left: auto; margin-right: auto;">
+<caption>
+Table 2
+</caption>
 <thead>
 <tr>
 <th style="empty-cells: hide;" colspan="1">
@@ -425,12 +529,12 @@ CrossTable&lt;-CrossTabley%&gt;%mutate(Total_N = N+N_1,
 </th>
 <th style="padding-bottom:0; padding-left:3px;padding-right:3px;text-align: center; " colspan="2">
 <div style="border-bottom: 1px solid #00000020; padding-bottom: 5px; ">
-No Alcohol Involved<br>(Drinkind_D = 0)
+No Alcohol Involved<br>(Drinking_D = 0)
 </div>
 </th>
 <th style="padding-bottom:0; padding-left:3px;padding-right:3px;text-align: center; " colspan="2">
 <div style="border-bottom: 1px solid #00000020; padding-bottom: 5px; ">
-Alcohol Involved<br>(Drinkind_D = 1)
+Alcohol Involved<br>(Drinking_D = 1)
 </div>
 </th>
 <th style="padding-bottom:0; padding-left:3px;padding-right:3px;text-align: center; " colspan="1">
@@ -463,7 +567,7 @@ N
 N
 </th>
 <th style="text-align:center;">
-X2 P.value
+Chi-Square p-value
 </th>
 </tr>
 </thead>
@@ -652,6 +756,8 @@ Crash involved at least one driver who was at least 65 years old
 </tr>
 </tbody>
 </table>
+<p><br></p>
+<p>Our two continuous predictors <code>PCTBACHMOR</code> and <code>MEDHHINC</code> are analyzed by calculating the mean and standard deviation for each outcome of our binary dependent variable (Table 3). We can see that there is little variation in the means for both continuous variables which is further confirmed by the p-values of the t-test.The t-test will be an indicator of whether our continuous variables are associated with the dependent variable. Both p-values in Table 3 are quite high meaning we fail to reject the <a href="#ttest">null hypothesis</a> that the average values (Mean) for each continuous variable are the same for crashes that do not involve alcohol and crashes that do involve alcohol.</p>
 <pre class="r"><code>#Means by group
 meanbach&lt;-as.data.frame(t(tapply(mydata$PCTBACHMOR, mydata$DRINKING_D, mean)))%&gt;%mutate(Variable= &#39;PCTBACHMOR&#39;)%&gt;%
   rename(&#39;mean.0&#39;=&#39;0&#39;, &#39;mean.1&#39;=&#39;1&#39;)
@@ -683,7 +789,10 @@ MeanSD_tbl&lt;- merge(x=(merge(x=meanHHinc, y=sdHHinc, all= TRUE)),
     &quot;% with a bachelor&#39;s degree or more&quot;,
     &quot;Median household income&quot;)))%&gt;%
   bind_cols(ttest_pvalues)</code></pre>
-<table class=" lightable-paper" style="font-family: &quot;Arial Narrow&quot;, arial, helvetica, sans-serif; margin-left: auto; margin-right: auto;">
+<table class=" lightable-paper table table-hover" style="font-family: &quot;Arial Narrow&quot;, arial, helvetica, sans-serif; margin-left: auto; margin-right: auto; margin-left: auto; margin-right: auto;">
+<caption>
+Table 3
+</caption>
 <thead>
 <tr>
 <th style="empty-cells: hide;" colspan="1">
@@ -775,8 +884,14 @@ Median household income
 </tr>
 </tbody>
 </table>
-<p><strong>b) Comment on which logistic regression assumptions are met and which ones are violated for the problem at hand.</strong></p>
-<table class="table lightable-paper" style="width: auto !important; margin-left: auto; margin-right: auto; font-family: &quot;Arial Narrow&quot;, arial, helvetica, sans-serif; margin-left: auto; margin-right: auto;">
+</div>
+<div id="logistic-regression-assumptions" class="section level3">
+<h3>LOGISTIC REGRESSION ASSUMPTIONS</h3>
+<p>We meet our first assumption of logistic regression that our dependent variable is binary – <code>DRINGING_D</code> has an output of either 1= Yes or 0 = No. Our predictors are independent of each other, and we create Table 4 to examine any indication of multicollinearity. We create a matrix showing the pairwise Pearson correlations for all predictors, binary and continuous, and check to see that we don’t have any correlations where our r value is higher than 0.8 or less than -0.8. While none of our predictors have severe multicollinearity and we are cleared to include all predictors in our regression, our limitation is that we are not meeting the Pearson correlation assumption that our variables are continuous. Only two of our predictors in our matrix are continuous and, the rest of the predictors and the dependent variable are binary. We should not typically use the Pearson correlation for two binary variables.</p>
+<table class="table table-hover lightable-paper" style="width: auto !important; margin-left: auto; margin-right: auto; font-family: &quot;Arial Narrow&quot;, arial, helvetica, sans-serif; margin-left: auto; margin-right: auto;">
+<caption>
+Table 4
+</caption>
 <thead>
 <tr>
 <th style="text-align:left;">
@@ -1166,7 +1281,9 @@ MEDHHINC
 </tr>
 </tbody>
 </table>
-<p><strong>c) Present the logistic regression results</strong></p>
+</div>
+<div id="logistic-regression-results" class="section level3">
+<h3>LOGISTIC REGRESSION RESULTS</h3>
 <p>When using logistic regression to identify predictors of accidents related to drunk driving, we employed two different models. The first used all the predictors listed in the methods section. The results for this model are shown below.</p>
 <table class=" lightable-paper lightable-hover table" style="font-family: &quot;Arial Narrow&quot;, arial, helvetica, sans-serif; margin-left: auto; margin-right: auto; width: auto !important; margin-left: auto; margin-right: auto;">
 <caption>
@@ -1666,7 +1783,7 @@ cutoff
 </tr>
 </tbody>
 </table>
-<p>Additionally, the resulting AUC for the ROC curve is 0.6398 and that tells us that our model is fair, but note great.</p>
+<p>Additionally, the resulting AUC for the ROC curve is 0.6398 and that tells us that our model is fair, but not great.</p>
 <table class="kable_wrapper lightable-material table" style="font-family: &quot;Source Sans Pro&quot;, helvetica, sans-serif; margin-left: auto; margin-right: auto; width: auto !important; margin-left: auto; margin-right: auto;">
 <tbody>
 <tr>
@@ -1978,9 +2095,11 @@ Logit 2
 </tbody>
 </table>
 </div>
+</div>
 <div id="discussion" class="section level1">
 <h1>DISCUSSION</h1>
 <p><strong>a) In a couple sentences, recap what you did in the paper, and your findings.</strong></p>
+<p>To examine the predictors of car crashes cause by alcohol in Philadelphia we ran logistic regression. Our dependent variable, whether or not a crash observation included an alcohol impaired driver, was binary, and we included a combination of binary and continuous predictive variables. We first explore our data by testing the associations between our predictors and the dependent variable through the Chi-Square test for our binary predictors, and the t-test for our categorical predictors. We then ran a Pearson correlation test to rule out any chance of multicollinearity among our variables. Our first logistic regression model uses all categorical and binary predictors we test in our exploratory analysis, in which we found <code>PCTBACHMOR</code> and <code>CELLPHONE</code> are not significant predictors, and <code>MEDHHINC</code> - the median household income of the block group in which the car crash took place - has very marginal predictive power over whether a car crash will include an alcohol impaired driver. We analyzed probability cutoffs to assess which threshold will have the lowest misclassification rate, plotted an ROC curve and calculated the AUC to identify our optimal threshold of 0.06. <strong>CHECK</strong> Our second regression included only our binary variables and excluded our Census data, and yielded similar results with all predictors being significant with the exception of <code>CELLPHONE</code>. We concluded that the Akaike Information Criterion of both models are similar and we cannot say either model is better than the other.</p>
 <p><strong>b) What are some limitations of the analysis? Discuss.</strong></p>
 </div>
 
