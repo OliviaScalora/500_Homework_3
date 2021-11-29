@@ -61,7 +61,8 @@ summary(factor(mydata$DRIVER65PLUS))
 #2.a
 #Alternative way of tabulating (and obtaining proportions for each category)
 DRINKING_D.tab <- table(mydata$DRINKING_D)
-DRINKING_D.tab%>%kable(format = "html", align = "ll", caption = "Drunk Driving Counts")%>%kable_paper()%>%kable_styling(full_width=F) 
+DRINKING_D.tab%>%mutate(Count = Freq)%>%
+  kable(format = "html", align = "ll", caption = "Drunk Driving Counts")%>%kable_paper()%>%kable_styling(full_width=F) 
 prop.table(DRINKING_D.tab)%>%kable(format = "html", align = "ll", caption = "Drunk Driving Proportion")%>%kable_material()%>%kable_styling(full_width=F)
 #proportion of crashes that involved a drunk driver
 
