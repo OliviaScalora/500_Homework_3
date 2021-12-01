@@ -59,28 +59,65 @@ head(mydata)
 
 # INTRODUCTION
 
-Approximately one person every 51 minutes dies in motor vehicle crashes that involve an alcohol-impaired driver, according to the US Department of Transportation. In addition to loss of life and other major injuries, the economic impact of drunk driving is estimated to be more than $59 billion annually, according to a study recently conducted by the National Highway Traffic Safety Administration. The goal of this analysis is to use logistic regression to identify predictors of car crashes related to drunk driving using R and a data set from the City of Philadelphia which contains all 53,260 car accidents in Philadelphia from 2008 - 2012. The data set is then filtered to include only the 43,364 observations that occurred in Philadelphia residential block groups. The crashes are geocoded, allowing us to spatially join our crash data to the 2000 Census block group level data set. Each crash point will then include the median household income and percent of individuals with at least a bachelor's degree in the block group where the crash took place. The categorical variables contained in our original data set are all additional details about each car crash, which we can hope will have some level of association with whether or not the crash involved a drunk driver. The predictors joined from the census data are continuous variables that are more indicative of the area in which the crash occurred as opposed to the details of the crash itself. We are interested in the correlation between block group level variables that indicate wealth and education and drunk driving occurrences. 
+Approximately one person every 51 minutes dies in motor vehicle crashes
+that involve an alcohol-impaired driver, according to the US Department
+of Transportation. In addition to loss of life and other major injuries,
+the economic impact of drunk driving is estimated to be more than \$59
+billion annually, according to a study recently conducted by the
+National Highway Traffic Safety Administration. The goal of this
+analysis is to use logistic regression to identify predictors of car
+crashes related to drunk driving using R and a data set from the City of
+Philadelphia which contains all 53,260 car accidents in Philadelphia
+from 2008 - 2012. The data set is then filtered to include only the
+43,364 observations that occurred in Philadelphia residential block
+groups. The crashes are geocoded, allowing us to spatially join our
+crash data to the 2000 Census block group level data set. Each crash
+point will then include the median household income and percent of
+individuals with at least a bachelor's degree in the block group where
+the crash took place. The categorical variables contained in our
+original data set are all additional details about each car crash, which
+we can hope will have some level of association with whether or not the
+crash involved a drunk driver. The predictors joined from the census
+data are continuous variables that are more indicative of the area in
+which the crash occurred as opposed to the details of the crash itself.
+We are interested in the correlation between block group level variables
+that indicate wealth and education and drunk driving occurrences.
 
-The original car crash data set contains the following variables.   
+The original car crash data set contains the following variables.
 
--   **`CRN`**  Crash Record Number  
--   **`DRINGING_D`**  Drinking driver indicator (1 = Yes, 0 = No)    
--   **`COLLISION`**  Collision category that defines the crash (0 = Non collision, 1 = Rear end, 2 = Head on, 3 = Rear to rear, 4 = Angle, 5 = Sideswipe(same direct.), 6 = Sideswipe (opposite direct.), 7 = Hit fixed object, 8 = Hit pedestrian, 9 = Other or unknown)  
--   **`FATAL_OR_M`**  Crash resulted in a fatality or major injury (1 = Yes, 0 = No)  
--   **`OVERTURNED`**  Crash involved an overturned vehicle (1 = Yes, 0 = No)  
--   **`CELL_PHONE`**  Driver was using cell phone (1 = Yes, 0 = No)  
--   **`SPEEDING`**  Crash involved speeding car (1 = Yes, 0 = No)  
--   **`AGGRESSIVE`**  Crash involved aggressive driving (1 = Yes, 0 = No)  
--   **`DRIVER1617`**  Crash involved at least one driver who was 16 or 17 years old(1 = Yes, 0 = No)  
--   **`DRIVER56PLUS`**  Crash involved at least one driver who was at least 65 years old(1 = Yes, 0 = No)  
+-   **`CRN`** Crash Record Number\
+-   **`DRINGING_D`** Drinking driver indicator (1 = Yes, 0 = No)\
+-   **`COLLISION`** Collision category that defines the crash (0 = Non
+    collision, 1 = Rear end, 2 = Head on, 3 = Rear to rear, 4 = Angle, 5
+    = Sideswipe(same direct.), 6 = Sideswipe (opposite direct.), 7 = Hit
+    fixed object, 8 = Hit pedestrian, 9 = Other or unknown)\
+-   **`FATAL_OR_M`** Crash resulted in a fatality or major injury (1 =
+    Yes, 0 = No)\
+-   **`OVERTURNED`** Crash involved an overturned vehicle (1 = Yes, 0 =
+    No)\
+-   **`CELL_PHONE`** Driver was using cell phone (1 = Yes, 0 = No)\
+-   **`SPEEDING`** Crash involved speeding car (1 = Yes, 0 = No)\
+-   **`AGGRESSIVE`** Crash involved aggressive driving (1 = Yes, 0 =
+    No)\
+-   **`DRIVER1617`** Crash involved at least one driver who was 16 or 17
+    years old(1 = Yes, 0 = No)\
+-   **`DRIVER56PLUS`** Crash involved at least one driver who was at
+    least 65 years old(1 = Yes, 0 = No)
 
-After joined with the Census block group data, we gain the following variables.   
+After joined with the Census block group data, we gain the following
+variables.
 
--   **`AREAKEY`**  ID of the Census Block Group where the crash took place  
--   **`PCTBACHMOR`**  % of individuals 25 years of age or older who have at least a bachelor's degree in the Census Block Group where the crash took place  
--   **`MEDHHINC`**  Median household income in the Census block Group where the crash took place  
+-   **`AREAKEY`** ID of the Census Block Group where the crash took
+    place\
+-   **`PCTBACHMOR`** % of individuals 25 years of age or older who have
+    at least a bachelor's degree in the Census Block Group where the
+    crash took place\
+-   **`MEDHHINC`** Median household income in the Census block Group
+    where the crash took place
 
-
+We are most interested by how age of drivers relates to crashes that
+involve drunk drivers. Generally, in the United States, there is a lot
+of talk about the safety concerns around both young and older drivers.[Consumer reports, 2012](https://www.consumerreports.org/cro/magazine/2012/10/teenagers-and-older-people-are-the-riskiest-drivers/index.htm) We would not be surprised if these car crashes that involve drunk drivers also involve the 'riskiest' drivers, teens and the elderly.
 
 # METHODS
 
@@ -115,19 +152,20 @@ $Y=1$ changes as the predictor increases by 1 unit.
 
 In our first logistic model, we included the following predictors:
 
--   whether crash resulted in fatality of major injury(`FATAL_OR_M`)  
+-   whether crash resulted in fatality of major injury(`FATAL_OR_M`)\
 -   whether crash involved an overturned vehicle - whether driver was
-    using a cellphone (`CELL_PHONE`)    
--   whether crash involved speeding car (`SPEEDING`)  
--   whether crash involved aggressive driving (`AGGRESSIVE`)  
+    using a cellphone (`CELL_PHONE`)\
+-   whether crash involved speeding car (`SPEEDING`)\
+-   whether crash involved aggressive driving (`AGGRESSIVE`)\
 -   whether crash involved at least one drive who was 16 or 17 years old
-    (`DRIVER1617`)    
+    (`DRIVER1617`)\
 -   whether crash involved at least one driver who was at least 65 year
-    old (`DRIVER65PLUS`)    
+    old (`DRIVER65PLUS`)\
 -   percent of individuals 25 years of age or older who have at least a
-    bachelors degree in the census block group where the crash took place (`PCTBACHMOR`)    
+    bachelors degree in the census block group where the crash took
+    place (`PCTBACHMOR`)\
 -   median household income in the census block group where the crash
-    took place (`MEDHHINC`)  
+    took place (`MEDHHINC`)
 
 Below are the equations in both the Logit form and the Logistic form.
 
@@ -245,10 +283,10 @@ As noted above, which $\hat{y}$ values are considered to be correctly or
 incorrectly predicted depends on where we set our cutoff threshold. Each
 threshold has it's own upsides and downsides. A threshold of 0.06 may
 result in a high True Positive rate, but it may also result in a high
-False Positive Rate. Essentially, in this scenario, at the cost of counting
-most $\hat{y}$ as predicting $Y=1$, you might correctly predict all of
-the instances where y is actually 1, but you will also incorrectly
-predict where y is actually 0.
+False Positive Rate. Essentially, in this scenario, at the cost of
+counting most $\hat{y}$ as predicting $Y=1$, you might correctly predict
+all of the instances where y is actually 1, but you will also
+incorrectly predict where y is actually 0.
 
 To help in making the best decision of where to place the cutoff
 threshold, we can use an ROC curve. The ROC curve shows the quality of
@@ -276,10 +314,10 @@ greater than 0.7 is generally good.
 
 The first assumption of Logistic Regression is that our dependent
 variable be binary. Additionally, our observations must be independent
-of each other, there should be no severe multicollinearity. Further
-unlike in OLS, Logistic Regression does not require the assumption that
-there needs to be a linear relationship between the dependent variable
-and each predictor, nor does it assume homoscedasticity or that the
+of each other, there should be no multicollinearity. Further unlike in
+OLS, Logistic Regression does not require the assumption that there
+needs to be a linear relationship between the dependent variable and
+each predictor, nor does it assume homoscedasticity or that the
 residuals be normal. However, larger samples are needed for Logistic
 Regression because Maximum Likelihood Estimation is used instead of
 least squares to estimate regression coefficients. We need at least 50
@@ -296,19 +334,15 @@ which this is a problem and continue with the model.
 
 Additionally, the Chi-Square test is the appropriate statistical test
 for examining the association between two categorical variables. In the
-Chi-Square test, our null and alternative hypotheses are as such:   
+Chi-Square test, our null and alternative hypotheses are as such:
 
-
-<a name="chi" class="isDisabled">
-**$H_0$: the proportion of fatalities for crashes that involve drunk**
-**drivers is the same as the proportion of fatalities for crashes that do**
-**not involve drunk drivers.**
+<a name="chi" class="isDisabled"> $H_0$: the proportion of fatalities
+for crashes that involve drunk **drivers is the same as the proportion
+of fatalities for crashes that do** **not involve drunk drivers.**
 
 $H_a$: **the proportion of fatalities for crashes that involve drunk**
-**drivers is different than the proportion of fatalities for crashes that**
-**do not involve drunk drivers.** 
-</a>   
-
+**drivers is different than the proportion of fatalities for crashes
+that** **do not involve drunk drivers.** </a>
 
 A high value of the $\chi^2$ statistic with a p-value \< 0.05, would
 suggest that there is evidence to reject the null hypothesis for the
@@ -322,15 +356,14 @@ t-test is the appropriate statistical test to do this, to examine if
 there are significant differences in mean values of our continuous
 variables, `PCTBACHMOR` and `MEDHHINC`, for crashes that involved drunk
 driving and those that didn't. In the independent samples t-test, our
-null and alternative hypotheses are as such:   
+null and alternative hypotheses are as such:
 
-<a name = "ttest" class="isDisabled">
-**$H_0$: average values of each continuous variable are the same for**
-**crashes that involve drunk drivers and crashes that did not.**
+<a name = "ttest" class="isDisabled"> $H_0$: average values of each
+continuous variable are the same for **crashes that involve drunk
+drivers and crashes that did not.**
 
-**$H_a$: average values of each continuous variable are different for**
-**crashes that involve drunk drivers and crashes that did not.**
-</a>
+$H_a$: average values of each continuous variable are different for
+**crashes that involve drunk drivers and crashes that did not.** </a>
 
 A high value of the t-statistic with a p-value \< 0.05 would suggest
 that there is evidence to reject the null hypothesis in favor of the
@@ -338,12 +371,13 @@ alternative.
 
 We also took a look at the pearson correlations between all the
 predictors (both binary and continuous) to determine if there was
-evidence of severe multicollinearity.
+evidence of multicollinearity.
 
 # RESULTS
 
 ### EXPLORATORY ANALYSIS
-<div style= "float:right; position: relative; padding: 15px;">
+
+::: {style="float:right; position: relative; padding: 15px;"}
 ```{r DD.tab, message=FALSE, warning=FALSE, out.width= "65%"}
 DRINKING_D.tab <- table(mydata$DRINKING_D)
 prop.table<- prop.table(DRINKING_D.tab)
@@ -364,10 +398,34 @@ bind_cols(as.data.frame(DRINKING_D.tab)%>%
   kable_paper()%>%kable_styling(full_width=F,
                                 bootstrap_options = "hover") 
 ```
-</div>
-We first examine the proportion of crashes that involve drunk driving in our observations. Table 1 shows the count and the proportion of crashes that involve drunk driving where 0 means no alcohol was involved and 1 means alcohol was involved. The proportion of crashes that don't involve alcohol, calculated by dividing the number of crashes not involving alcohol by the total number of crashes, is much higher at just over 94% compared to compared to those that do at just under 6%. 
+:::
 
-We next look at the cross tabulations of our dependent variable with each binary predictor in Table 2. Here, we are examining the number and percentage of crashes not involving alcohol, and crashes involving alcohol where each predictor is true. For example, row one tells us that out of the 1300 crashes that resulted in fatality or major injury, 119 (0.27%) did not involve alcohol and 1181 (2.72%) did. For each predictor we ran the Chi-Square test to determine whether the distribution of our dependent categorical variable varies with respect to the values of the predictor categorical variables. The p-value for each predictor indicates whether or not we can reject or fail to reject our null hypothesis *(defined for `FATAL_OR_M` in [Methods](#chi))*. We see that each binary predictor has a p-value lower than 0.05 which suggests that there is evidence to reject the null hypothesis in favor of the alternative, and that there's an association between all of our predictor variables and the dependent variable except for `CELL_PHONE`. This means there is not enough variance in the values of our binary dependent variable with respect to drivers using a cell phone at the time of the crash.
+We first examine the proportion of crashes that involve drunk driving in
+our observations. Table 1 shows the count and the proportion of crashes
+that involve drunk driving where 0 means no alcohol was involved and 1
+means alcohol was involved. The proportion of crashes that don't involve
+alcohol, calculated by dividing the number of crashes not involving
+alcohol by the total number of crashes, is much higher at just over 94%
+compared to compared to those that do at just under 6%.
+
+We next look at the cross tabulations of our dependent variable with
+each binary predictor in Table 2. Here, we are examining the number and
+percentage of crashes not involving alcohol, and crashes involving
+alcohol where each predictor is true. For example, row one tells us that
+out of the 1300 crashes that resulted in fatality or major injury, 119
+(0.27%) did not involve alcohol and 1181 (2.72%) did. For each predictor
+we ran the Chi-Square test to determine whether the distribution of our
+dependent categorical variable varies with respect to the values of the
+predictor categorical variables. The p-value for each predictor
+indicates whether or not we can reject or fail to reject our null
+hypothesis *(defined for `FATAL_OR_M` in [Methods](#chi))*. We see that
+each binary predictor has a p-value lower than 0.05 which suggests that
+there is evidence to reject the null hypothesis in favor of the
+alternative, and that there's an association between all of our
+predictor variables and the dependent variable except for `CELL_PHONE`.
+This means there is not enough variance in the values of our binary
+dependent variable with respect to drivers using a cell phone at the
+time of the crash.
 
 ```{r cross.tab, include = TRUE, warning=FALSE, message=FALSE,results='hide'}
 
@@ -481,8 +539,17 @@ CrossTable[, c(3,7,1,5,2,6,4,8)]%>%
 ```
 
 <br>
-  
-Our two continuous predictors `PCTBACHMOR` and `MEDHHINC` are analyzed by calculating the mean and standard deviation for each outcome of our binary dependent variable (Table 3). We can see that there is little variation in the means for both continuous variables which is further confirmed by the p-values of the t-test.The t-test will be an indicator of whether our continuous variables are associated with the dependent variable. Both p-values in Table 3 are quite high meaning we fail to reject the [null hypothesis](#ttest) that the average values (Mean) for each continuous variable are the same for crashes that do not involve alcohol and crashes that do involve alcohol.
+
+Our two continuous predictors `PCTBACHMOR` and `MEDHHINC` are analyzed
+by calculating the mean and standard deviation for each outcome of our
+binary dependent variable (Table 3). We can see that there is little
+variation in the means for both continuous variables which is further
+confirmed by the p-values of the t-test.The t-test will be an indicator
+of whether our continuous variables are associated with the dependent
+variable. Both p-values in Table 3 are quite high meaning we fail to
+reject the [null hypothesis](#ttest) that the average values (Mean) for
+each continuous variable are the same for crashes that do not involve
+alcohol and crashes that do involve alcohol.
 
 ```{r sd.mean.tab, include = TRUE, warning=FALSE, message=FALSE,results='hide'}
 #Means by group
@@ -535,9 +602,21 @@ MeanSD_tbl[, c(1,6,2,4,3,5,7)]%>%
   column_spec(c(5:6),background = '#e1e1e1')
 ```
 
-### LOGISTIC REGRESSION ASSUMPTIONS  
+### LOGISTIC REGRESSION ASSUMPTIONS
 
-We meet our first assumption of logistic regression that our dependent variable is binary -- `DRINGING_D` has an output of either 1= Yes or 0 = No. Our predictors are independent of each other, and we create Table 4 to examine any indication of multicollinearity. We create a matrix showing the pairwise Pearson correlations for all predictors, binary and continuous, and check to see that we don't have any correlations where our r value is higher than 0.8 or less than -0.8. While none of our predictors have severe multicollinearity and we are cleared to include all predictors in our regression, our limitation is that we are not meeting the Pearson correlation assumption that our variables are continuous. Only two of our predictors in our matrix are continuous and, the rest of the predictors and the dependent variable are binary. We should not typically use the Pearson correlation for two binary variables. 
+We meet our first assumption of logistic regression that our dependent
+variable is binary -- `DRINGING_D` has an output of either 1= Yes or 0 =
+No. Our predictors are independent of each other, and we create Table 4
+to examine any indication of multicollinearity. We create a matrix
+showing the pairwise Pearson correlations for all predictors, binary and
+continuous, and check to see that we don't have any correlations where
+our r value is higher than 0.8 or less than -0.8. While none of our
+predictors have multicollinearity and we are cleared to include all
+predictors in our regression, our limitation is that we are not meeting
+the Pearson correlation assumption that our variables are continuous.
+Only two of our predictors in our matrix are continuous and, the rest of
+the predictors and the dependent variable are binary. We should not
+typically use the Pearson correlation for two binary variables.
 
 ```{r corr.mat, include = TRUE, echo= FALSE, warning=FALSE, message=FALSE, fig.width=8, fig.height=6}
 pred_var <- mydata%>%dplyr::select(DRINKING_D, FATAL_OR_M, OVERTURNED, CELL_PHONE, SPEEDING,
@@ -591,7 +670,7 @@ finallogitoutput<- cbind(logitcoeffs, or_ci)
 # MAKING IT PRETTY
 
 finallogitoutput%>%kable(format = "html", align = "rlllllll", caption = "Logistic Regression Results")%>%
-  kable_paper("hover")%>%kable_styling(full_width=F)
+  kable_paper("hover")%>%kable_styling()
 
 ```
 
@@ -669,8 +748,8 @@ iterateThresholds <- function(data, observedClass, predictedProbs, group) {
                   Rate_FP = Count_FP / (Count_FP + Count_TN),
                   Rate_FN = Count_FN / (Count_FN + Count_TP),
                   Rate_TN = Count_TN / (Count_TN + Count_FP),
-                  Sensitivity = Count_TP / (Count_TP + Count_FP),
-                  Specificity = Count_TN / (Count_TN + Count_FN),
+                  Sensitivity = Count_TP / (Count_TP + Count_FN),
+                  Specificity = Count_TN / (Count_TN + Count_FP),
                   MissClass_Rate = (Count_FP + Count_FN)/(Count_FP + Count_FN + Count_TP + Count_TN), 
                   Accuracy = (Count_TP + Count_TN) / 
                     (Count_TP + Count_TN + Count_FN + Count_FP)) %>%
@@ -698,8 +777,8 @@ iterateThresholds <- function(data, observedClass, predictedProbs, group) {
                   Rate_FP = Count_FP / (Count_FP + Count_TN),
                   Rate_FN = Count_FN / (Count_FN + Count_TP),
                   Rate_TN = Count_TN / (Count_TN + Count_FP),
-                  Sensitivity = Count_TP / (Count_TP + Count_FP),
-                  Specificity = Count_TN / (Count_TN + Count_FN),
+                  Sensitivity = Count_TP / (Count_TP + Count_FN),
+                  Specificity = Count_TN / (Count_TN + Count_FP),
                   MissClass_Rate = (Count_FP + Count_FN)/(Count_FP + Count_FN + Count_TP + Count_TN),
                   Accuracy = (Count_TP + Count_TN) / 
                     (Count_TP + Count_TN + Count_FN + Count_FP)) %>%
@@ -711,7 +790,6 @@ iterateThresholds <- function(data, observedClass, predictedProbs, group) {
     return(all_prediction)
   }
 }
-
 #prepping
 fit <-mylogit$fitted.values
 
@@ -762,7 +840,7 @@ ourthresh <- whichThreshold %>%filter(Threshold == 0.02 | Threshold == 0.03|Thre
 ```{r spec.sens.mis.table, include = TRUE, echo= FALSE, warning=FALSE, message=FALSE, fig.width=8, fig.height=6}
 ourthresh%>%kable(format = "html", align = "llll", caption = "Goodness of Fit Metrics",
                   col.names = c("Cut Off Value", "Sensitivity", "Specificity", "Missclassification Rate"))%>%
-  kable_paper("hover")%>%kable_styling(full_width=F)%>% 
+  kable_paper("hover")%>%kable_styling()%>% 
   row_spec(10, bold = T,background = "#f0d560")
 
 
@@ -934,7 +1012,60 @@ aic%>%mutate(Model = c("Logit 1", "Logit 2"))%>% rename("Degrees of Freedom" = d
 
 # DISCUSSION
 
-To examine the predictors of car crashes cause by alcohol in Philadelphia we ran logistic regression. Our dependent variable, whether or not a crash observation included an alcohol impaired driver, was binary, and we included a combination of binary and continuous predictive variables. We first explore our data by testing the associations between our predictors and the dependent variable through the Chi-Square test for our binary predictors, and the t-test for our categorical predictors. We then ran a Pearson correlation test to rule out any chance of multicollinearity among our variables. Our first logistic regression model uses all categorical and binary predictors we test in our exploratory analysis, in which we found `PCTBACHMOR` and `CELLPHONE` are not significant predictors, and `MEDHHINC` - the median household income of the block group in which the car crash took place - has very marginal predictive power over whether a car crash will include an alcohol impaired driver. We analyzed probability cutoffs to assess which threshold will have the lowest misclassification rate, plotted an ROC curve and calculated the AUC to identify our optimal threshold of 0.06. **!!CHECK!!** Our second regression included only our binary variables and excluded our Census data, and yielded similar results with all predictors being significant with the exception of `CELLPHONE`. We concluded that the Akaike Information Criterion of both models are similar and we cannot say either model is better than the other. 
+To examine the predictors of car crashes cause by alcohol in
+Philadelphia we ran logistic regression. Our dependent variable, whether
+or not a crash observation included an alcohol impaired driver, was
+binary, and we included a combination of binary and continuous
+predictive variables. We first explore our data by testing the
+associations between our predictors and the dependent variable through
+the Chi-Square test for our binary predictors, and the t-test for our
+categorical predictors. We then ran a Pearson correlation test to rule
+out any chance of multicollinearity among our variables. Our first
+logistic regression model uses all categorical and binary predictors we
+test in our exploratory analysis, in which we found `PCTBACHMOR` and
+`CELLPHONE` are not significant predictors, and `MEDHHINC` - the median
+household income of the block group in which the car crash took place -
+has very marginal predictive power over whether a car crash will include
+an alcohol impaired driver. We analyzed probability cutoffs to assess
+which threshold will have the lowest misclassification rate, by which we
+found that a cutoff of 0.50 yielded the lowest missclassification rate.
+However when we plotted an ROC curve and calculated the AUC to identify
+our optimal threshold that optimized specificity and sensitivity, our
+optimal threshold was identified as 0.06. Our second regression included
+only our binary variables and excluded our Census data, and yielded
+similar results with all predictors being significant with the exception
+of `CELLPHONE`. We concluded that the Akaike Information Criterion of
+both models are similar and we cannot say either model is better than
+the other.
 
+It was surprising to find that age, whether young (between 16 and 17) or
+older, (above 65) did not significantly increase the probability that a
+crash involved a drunk driver. We believe that is a helpful insight for
+a government agency seeking to aim resources at prevention. From this
+finding they might be able to effectively spend their resources on a
+subset of the population more prone to be involved in drunk driving car
+crashes. On the other hand, it's not surprising that speeding cars are
+more likely to be involved in car crashes with drunk drivers. This is
+another helpful insight for highway patrol agencies hoping to curb
+highest risk behavior on the road rather than capturing all kinds of
+violations that happen on the road.
 
-**b) What are some limitations of the analysis? Discuss.**
+Despite our helpful findings, our study is somewhat limited by the use
+of logistic regression because crashes involving drunk drivers could be
+considered a rare event in our sample. As Paul Allison points out,
+modelling though the maximum likelihood estimation is known to suffer
+from small sample bias. Overall the percentage of 'events' (crashes
+involving drunk drivers) in our sample accounts for roughly 5% of all
+observations, but the ratio of events to non events is \~1:16. According
+to Zeng and King, rare events "are binary dependent variables with
+dozens to thousands of times fewer ones than zeros." ([Zeng and King,
+2001](https://gking.harvard.edu/files/0s.pdf)) Because of this we think
+logistic regression may not be appropriate for our data, and we should
+explore using a modelling rare events method.
+
+Additionally, while we investigated if our predictors have
+multicollinearity by using Pearson's correlation, our method (Pearson's)
+requires that our predcitors be continuous. However most of predictors
+were binary, so the interpretation of the Pearson's results may not be
+trustworthy. This may undermine the assumption that predictors do not
+suffer from multicollinearity required for logistic regression.

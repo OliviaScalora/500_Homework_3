@@ -265,7 +265,7 @@ div.tocify {
 
 <div id="introduction" class="section level1">
 <h1>INTRODUCTION</h1>
-<p>Approximately one person every 51 minutes dies in motor vehicle crashes that involve an alcohol-impaired driver, according to the US Department of Transportation. In addition to loss of life and other major injuries, the economic impact of drunk driving is estimated to be more than $59 billion annually, according to a study recently conducted by the National Highway Traffic Safety Administration. The goal of this analysis is to use logistic regression to identify predictors of car crashes related to drunk driving using R and a data set from the City of Philadelphia which contains all 53,260 car accidents in Philadelphia from 2008 - 2012. The data set is then filtered to include 43,364 observations that occurred in Philadelphia residential block groups. The crashes are geocoded, allowing us to spatially join our crash data to the 2000 Census block group level data set. Each crash point will then include the median household income and percent of individuals with at least a bachelor’s degree in the block group where the crash took place. The categorical variables contained in our original data set are all additional details about each car crash, which we assume will have some level of association with whether or not the crash involved a drunk driver. The predictors joined from the census data are continuous variables that are more indicative of the area in which the crash occurred as opposed to the details of the crash itself. We are interested in the correlation between block group level variables that indicate wealth and education and drunk driving occurrences.</p>
+<p>Approximately one person every 51 minutes dies in motor vehicle crashes that involve an alcohol-impaired driver, according to the US Department of Transportation. In addition to loss of life and other major injuries, the economic impact of drunk driving is estimated to be more than $59 billion annually, according to a study recently conducted by the National Highway Traffic Safety Administration. The goal of this analysis is to use logistic regression to identify predictors of car crashes related to drunk driving using R and a data set from the City of Philadelphia which contains all 53,260 car accidents in Philadelphia from 2008 - 2012. The data set is then filtered to include only the 43,364 observations that occurred in Philadelphia residential block groups. The crashes are geocoded, allowing us to spatially join our crash data to the 2000 Census block group level data set. Each crash point will then include the median household income and percent of individuals with at least a bachelor’s degree in the block group where the crash took place. The categorical variables contained in our original data set are all additional details about each car crash, which we can hope will have some level of association with whether or not the crash involved a drunk driver. The predictors joined from the census data are continuous variables that are more indicative of the area in which the crash occurred as opposed to the details of the crash itself. We are interested in the correlation between block group level variables that indicate wealth and education and drunk driving occurrences.</p>
 <p>The original car crash data set contains the following variables.</p>
 <ul>
 <li><strong><code>CRN</code></strong> Crash Record Number<br />
@@ -296,6 +296,7 @@ div.tocify {
 </li>
 <li><strong><code>MEDHHINC</code></strong> Median household income in the Census block Group where the crash took place</li>
 </ul>
+<p>We are most interested by how age of drivers relates to crashes that involve drunk drivers. Generally, in the United States, there is a lot of talk about the safety concerns around both young and older drivers.<a href="https://www.consumerreports.org/cro/magazine/2012/10/teenagers-and-older-people-are-the-riskiest-drivers/index.htm">Consumer reports, 2012</a> We would not be surprised if these car crashes that involve drunk drivers also involve the ‘riskiest’ drivers, teens and the elderly.</p>
 </div>
 <div id="methods" class="section level1">
 <h1>METHODS</h1>
@@ -339,17 +340,17 @@ div.tocify {
 <p>As noted above, which <span class="math inline">\(\hat{y}\)</span> values are considered to be correctly or incorrectly predicted depends on where we set our cutoff threshold. Each threshold has it’s own upsides and downsides. A threshold of 0.06 may result in a high True Positive rate, but it may also result in a high False Positive Rate. Essentially, in this scenario, at the cost of counting most <span class="math inline">\(\hat{y}\)</span> as predicting <span class="math inline">\(Y=1\)</span>, you might correctly predict all of the instances where y is actually 1, but you will also incorrectly predict where y is actually 0.</p>
 <p>To help in making the best decision of where to place the cutoff threshold, we can use an ROC curve. The ROC curve shows the quality of predictions of various thresholds by plotting the True Positive Rate (Sensitivity) versus the False Positive Rate for every possible cut-off threshold. The best threshold can be determined by optimizing sensitivity and specificity. In the case that the model’s use benefits from having both sensitivity and specificity maximized, we can use the Youden Index to identify an optimal threshold mathematically. Alternatively, given that specificity and sensitivity should be maximized, a threshold can be determined by identifying the point of the curve where it has the minimum distance from the upper left corner of the graph, i.e. where both specificity and sensitivity are equal to 1. We will be using the latter approach in R.</p>
 <p>Another helpful metric for determining the quality of our model is the area under the ROC curve (AUC). The value of the AUC should be above 0.60 if the model is any use at all. An AUC between 0.50 and 0.60 is a fail, between .60 and .70 is poor, between 0.70 and 0.80 is fair, between .80 and .90 is good, and in some cases an AUC of .90 and 1 is excellent. Although depending on the model’s use, an AUC of 1 might not be good, because it would mean that the model is overfit and would not predict well on unseen data. Additionally, in real world cases, an AUC greater than 0.7 is generally good.</p>
-<p>The first assumption of Logistic Regression is that our dependent variable be binary. Additionally, our observations must be independent of each other, there should be no severe multicollinearity. Further unlike in OLS, Logistic Regression does not require the assumption that there needs to be a linear relationship between the dependent variable and each predictor, nor does it assume homoscedasticity or that the residuals be normal. However, larger samples are needed for Logistic Regression because Maximum Likelihood Estimation is used instead of least squares to estimate regression coefficients. We need at least 50 observations per predictor for Logistic Regression, compared to only 10 per predictor for OLS.</p>
+<p>The first assumption of Logistic Regression is that our dependent variable be binary. Additionally, our observations must be independent of each other, there should be no multicollinearity. Further unlike in OLS, Logistic Regression does not require the assumption that there needs to be a linear relationship between the dependent variable and each predictor, nor does it assume homoscedasticity or that the residuals be normal. However, larger samples are needed for Logistic Regression because Maximum Likelihood Estimation is used instead of least squares to estimate regression coefficients. We need at least 50 observations per predictor for Logistic Regression, compared to only 10 per predictor for OLS.</p>
 <p>Before we run our Logistic Regression Model, it is a good idea to run cross-tabulations between the dependent variable and binary predictors, to see whether there is an association between them. In doing so, we may identify a “perfect prediction problem” where only one value of a predictor is associated with only one value of the response variable. If this problem were identified, we would simply remove the predictor for which this is a problem and continue with the model.</p>
 <p>Additionally, the Chi-Square test is the appropriate statistical test for examining the association between two categorical variables. In the Chi-Square test, our null and alternative hypotheses are as such:</p>
-<p><a name="chi" class="isDisabled"> <strong><span class="math inline">\(H_0\)</span>: the proportion of fatalities for crashes that involve drunk</strong> <strong>drivers is the same as the proportion of fatalities for crashes that do</strong> <strong>not involve drunk drivers.</strong></p>
+<p><a name="chi" class="isDisabled"> <span class="math inline">\(H_0\)</span>: the proportion of fatalities for crashes that involve drunk <strong>drivers is the same as the proportion of fatalities for crashes that do</strong> <strong>not involve drunk drivers.</strong></p>
 <p><span class="math inline">\(H_a\)</span>: <strong>the proportion of fatalities for crashes that involve drunk</strong> <strong>drivers is different than the proportion of fatalities for crashes that</strong> <strong>do not involve drunk drivers.</strong> </a></p>
 <p>A high value of the <span class="math inline">\(\chi^2\)</span> statistic with a p-value &lt; 0.05, would suggest that there is evidence to reject the null hypothesis for the alternative. It would also suggest that there is an association between drunk driving fand crash fatalities.</p>
 <p>Before we run our Logistic Regression Model we should also examine whether the means of the continuous predictors seem to differ for the different levels of the dependent variable. The independent samples t-test is the appropriate statistical test to do this, to examine if there are significant differences in mean values of our continuous variables, <code>PCTBACHMOR</code> and <code>MEDHHINC</code>, for crashes that involved drunk driving and those that didn’t. In the independent samples t-test, our null and alternative hypotheses are as such:</p>
-<p><a name="ttest" class="isDisabled"> <strong><span class="math inline">\(H_0\)</span>: average values of each continuous variable are the same for</strong> <strong>crashes that involve drunk drivers and crashes that did not.</strong></p>
-<p><strong><span class="math inline">\(H_a\)</span>: average values of each continuous variable are different for</strong> <strong>crashes that involve drunk drivers and crashes that did not.</strong> </a></p>
+<p><a name="ttest" class="isDisabled"> <span class="math inline">\(H_0\)</span>: average values of each continuous variable are the same for <strong>crashes that involve drunk drivers and crashes that did not.</strong></p>
+<p><span class="math inline">\(H_a\)</span>: average values of each continuous variable are different for <strong>crashes that involve drunk drivers and crashes that did not.</strong> </a></p>
 <p>A high value of the t-statistic with a p-value &lt; 0.05 would suggest that there is evidence to reject the null hypothesis in favor of the alternative.</p>
-<p>We also took a look at the pearson correlations between all the predictors (both binary and continuous) to determine if there was evidence of severe multicollinearity.</p>
+<p>We also took a look at the pearson correlations between all the predictors (both binary and continuous) to determine if there was evidence of multicollinearity.</p>
 </div>
 <div id="results" class="section level1">
 <h1>RESULTS</h1>
@@ -887,7 +888,7 @@ Median household income
 </div>
 <div id="logistic-regression-assumptions" class="section level3">
 <h3>LOGISTIC REGRESSION ASSUMPTIONS</h3>
-<p>We meet our first assumption of logistic regression that our dependent variable is binary – <code>DRINGING_D</code> has an output of either 1= Yes or 0 = No. Our predictors are independent of each other, and we create Table 4 to examine any indication of multicollinearity. We create a matrix showing the pairwise Pearson correlations for all predictors, binary and continuous, and check to see that we don’t have any correlations where our r value is higher than 0.8 or less than -0.8. While none of our predictors have severe multicollinearity and we are cleared to include all predictors in our regression, our limitation is that we are not meeting the Pearson correlation assumption that our variables are continuous. Only two of our predictors in our matrix are continuous and, the rest of the predictors and the dependent variable are binary. We should not typically use the Pearson correlation for two binary variables.</p>
+<p>We meet our first assumption of logistic regression that our dependent variable is binary – <code>DRINGING_D</code> has an output of either 1= Yes or 0 = No. Our predictors are independent of each other, and we create Table 4 to examine any indication of multicollinearity. We create a matrix showing the pairwise Pearson correlations for all predictors, binary and continuous, and check to see that we don’t have any correlations where our r value is higher than 0.8 or less than -0.8. While none of our predictors have multicollinearity and we are cleared to include all predictors in our regression, our limitation is that we are not meeting the Pearson correlation assumption that our variables are continuous. Only two of our predictors in our matrix are continuous and, the rest of the predictors and the dependent variable are binary. We should not typically use the Pearson correlation for two binary variables.</p>
 <table class="table table-hover lightable-paper" style="width: auto !important; margin-left: auto; margin-right: auto; font-family: &quot;Arial Narrow&quot;, arial, helvetica, sans-serif; margin-left: auto; margin-right: auto;">
 <caption>
 Table 4
@@ -1285,7 +1286,7 @@ MEDHHINC
 <div id="logistic-regression-results" class="section level3">
 <h3>LOGISTIC REGRESSION RESULTS</h3>
 <p>When using logistic regression to identify predictors of accidents related to drunk driving, we employed two different models. The first used all the predictors listed in the methods section. The results for this model are shown below.</p>
-<table class=" lightable-paper lightable-hover table" style="font-family: &quot;Arial Narrow&quot;, arial, helvetica, sans-serif; margin-left: auto; margin-right: auto; width: auto !important; margin-left: auto; margin-right: auto;">
+<table class=" lightable-paper lightable-hover table" style="font-family: &quot;Arial Narrow&quot;, arial, helvetica, sans-serif; margin-left: auto; margin-right: auto; margin-left: auto; margin-right: auto;">
 <caption>
 Logistic Regression Results
 </caption>
@@ -1587,7 +1588,7 @@ MEDHHINC
 <li><p>and at least one driver at least 65 years old are 53.91% lower than the odds of crash involving a drunk driver and no driver at least 65 years old</p></li>
 </ul>
 <p>Below is a table that shows the specificity, sensitivity, and misclassification rates for the different probability cut-offs. The cut-off that yields the lowest misclassification rate is the 0.0 threshold, highlighted in yellow. The 0.50 threshold yields a 0.0573506 misclassification rate. The cut-off that yields the highest misclassification rate is the 0.02 threshold, the lowest threshold. The 0.02 threshold yields a misclassification rate of 0.8888940.</p>
-<table class=" lightable-paper lightable-hover table" style="font-family: &quot;Arial Narrow&quot;, arial, helvetica, sans-serif; margin-left: auto; margin-right: auto; width: auto !important; margin-left: auto; margin-right: auto;">
+<table class=" lightable-paper lightable-hover table" style="font-family: &quot;Arial Narrow&quot;, arial, helvetica, sans-serif; margin-left: auto; margin-right: auto; margin-left: auto; margin-right: auto;">
 <caption>
 Goodness of Fit Metrics
 </caption>
@@ -1613,10 +1614,10 @@ Missclassification Rate
 0.02
 </td>
 <td style="text-align:left;">
-0.0596840
+0.9835010
 </td>
 <td style="text-align:left;">
-0.9830228
+0.0580738
 </td>
 <td style="text-align:left;">
 0.8888940
@@ -1627,10 +1628,10 @@ Missclassification Rate
 0.03
 </td>
 <td style="text-align:left;">
-0.0598727
+0.9806841
 </td>
 <td style="text-align:left;">
-0.9819617
+0.0639204
 </td>
 <td style="text-align:left;">
 0.8835440
@@ -1641,10 +1642,10 @@ Missclassification Rate
 0.05
 </td>
 <td style="text-align:left;">
-0.0776064
+0.7348089
 </td>
 <td style="text-align:left;">
-0.9667759
+0.4690917
 </td>
 <td style="text-align:left;">
 0.5156812
@@ -1655,10 +1656,10 @@ Missclassification Rate
 0.07
 </td>
 <td style="text-align:left;">
-0.1350356
+0.2213280
 </td>
 <td style="text-align:left;">
-0.9507521
+0.9138188
 </td>
 <td style="text-align:left;">
 0.1258648
@@ -1669,10 +1670,10 @@ Missclassification Rate
 0.08
 </td>
 <td style="text-align:left;">
-0.1546496
+0.1847082
 </td>
 <td style="text-align:left;">
-0.9498465
+0.9386237
 </td>
 <td style="text-align:left;">
 0.1045798
@@ -1683,10 +1684,10 @@ Missclassification Rate
 0.09
 </td>
 <td style="text-align:left;">
-0.1591169
+0.1682093
 </td>
 <td style="text-align:left;">
-0.9492599
+0.9459625
 </td>
 <td style="text-align:left;">
 0.0986071
@@ -1697,10 +1698,10 @@ Missclassification Rate
 0.10
 </td>
 <td style="text-align:left;">
-0.1615842
+0.1641851
 </td>
 <td style="text-align:left;">
-0.9491418
+0.9482130
 </td>
 <td style="text-align:left;">
 0.0967162
@@ -1711,10 +1712,10 @@ Missclassification Rate
 0.15
 </td>
 <td style="text-align:left;">
-0.1856631
+0.1042254
 </td>
 <td style="text-align:left;">
-0.9469609
+0.9722107
 </td>
 <td style="text-align:left;">
 0.0775297
@@ -1725,10 +1726,10 @@ Missclassification Rate
 0.20
 </td>
 <td style="text-align:left;">
-0.2317073
+0.0229376
 </td>
 <td style="text-align:left;">
-0.9436894
+0.9953766
 </td>
 <td style="text-align:left;">
 0.0603496
@@ -1739,10 +1740,10 @@ Missclassification Rate
 0.50
 </td>
 <td style="text-align:left;font-weight: bold;background-color: #f0d560 !important;">
-0.5000000
+0.0016097
 </td>
 <td style="text-align:left;font-weight: bold;background-color: #f0d560 !important;">
-0.9427761
+0.9999022
 </td>
 <td style="text-align:left;font-weight: bold;background-color: #f0d560 !important;">
 0.0573056
@@ -2098,9 +2099,10 @@ Logit 2
 </div>
 <div id="discussion" class="section level1">
 <h1>DISCUSSION</h1>
-<p><strong>a) In a couple sentences, recap what you did in the paper, and your findings.</strong></p>
-<p>To examine the predictors of car crashes cause by alcohol in Philadelphia we ran logistic regression. Our dependent variable, whether or not a crash observation included an alcohol impaired driver, was binary, and we included a combination of binary and continuous predictive variables. We first explore our data by testing the associations between our predictors and the dependent variable through the Chi-Square test for our binary predictors, and the t-test for our categorical predictors. We then ran a Pearson correlation test to rule out any chance of multicollinearity among our variables. Our first logistic regression model uses all categorical and binary predictors we test in our exploratory analysis, in which we found <code>PCTBACHMOR</code> and <code>CELLPHONE</code> are not significant predictors, and <code>MEDHHINC</code> - the median household income of the block group in which the car crash took place - has very marginal predictive power over whether a car crash will include an alcohol impaired driver. We analyzed probability cutoffs to assess which threshold will have the lowest misclassification rate, plotted an ROC curve and calculated the AUC to identify our optimal threshold of 0.06. <strong>CHECK</strong> Our second regression included only our binary variables and excluded our Census data, and yielded similar results with all predictors being significant with the exception of <code>CELLPHONE</code>. We concluded that the Akaike Information Criterion of both models are similar and we cannot say either model is better than the other.</p>
-<p><strong>b) What are some limitations of the analysis? Discuss.</strong></p>
+<p>To examine the predictors of car crashes cause by alcohol in Philadelphia we ran logistic regression. Our dependent variable, whether or not a crash observation included an alcohol impaired driver, was binary, and we included a combination of binary and continuous predictive variables. We first explore our data by testing the associations between our predictors and the dependent variable through the Chi-Square test for our binary predictors, and the t-test for our categorical predictors. We then ran a Pearson correlation test to rule out any chance of multicollinearity among our variables. Our first logistic regression model uses all categorical and binary predictors we test in our exploratory analysis, in which we found <code>PCTBACHMOR</code> and <code>CELLPHONE</code> are not significant predictors, and <code>MEDHHINC</code> - the median household income of the block group in which the car crash took place - has very marginal predictive power over whether a car crash will include an alcohol impaired driver. We analyzed probability cutoffs to assess which threshold will have the lowest misclassification rate, by which we found that a cutoff of 0.50 yielded the lowest missclassification rate. However when we plotted an ROC curve and calculated the AUC to identify our optimal threshold that optimized specificity and sensitivity, our optimal threshold was identified as 0.06. Our second regression included only our binary variables and excluded our Census data, and yielded similar results with all predictors being significant with the exception of <code>CELLPHONE</code>. We concluded that the Akaike Information Criterion of both models are similar and we cannot say either model is better than the other.</p>
+<p>It was surprising to find that age, whether young (between 16 and 17) or older, (above 65) did not significantly increase the probability that a crash involved a drunk driver. We believe that is a helpful insight for a government agency seeking to aim resources at prevention. From this finding they might be able to effectively spend their resources on a subset of the population more prone to be involved in drunk driving car crashes. On the other hand, it’s not surprising that speeding cars are more likely to be involved in car crashes with drunk drivers. This is another helpful insight for highway patrol agencies hoping to curb highest risk behavior on the road rather than capturing all kinds of violations that happen on the road.</p>
+<p>Despite our helpful findings, our study is somewhat limited by the use of logistic regression because crashes involving drunk drivers could be considered a rare event in our sample. As Paul Allison points out, modelling though the maximum likelihood estimation is known to suffer from small sample bias. Overall the percentage of ‘events’ (crashes involving drunk drivers) in our sample accounts for roughly 5% of all observations, but the ratio of events to non events is ~1:16. According to Zeng and King, rare events “are binary dependent variables with dozens to thousands of times fewer ones than zeros.” (<a href="https://gking.harvard.edu/files/0s.pdf">Zeng and King, 2001</a>) Because of this we think logistic regression may not be appropriate for our data, and we should explore using a modelling rare events method.</p>
+<p>Additionally, while we investigated if our predictors have multicollinearity by using Pearson’s correlation, our method (Pearson’s) requires that our predcitors be continuous. However most of predictors were binary, so the interpretation of the Pearson’s results may not be trustworthy. This may undermine the assumption that predictors do not suffer from multicollinearity required for logistic regression.</p>
 </div>
 
 

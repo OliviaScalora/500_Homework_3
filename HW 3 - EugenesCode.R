@@ -99,12 +99,13 @@ b <- a[order(a[,2]),]
 #than or equal to 0.05 and 0 otherwise.
 
 #Other cut-offs can be used here!
-c <- (b[,2] >= 0.05)
+c <- (b[,2] >= 0.06365151)
 
 #Creating matrix d which merges matrixes b and c
 d <- cbind(b,c)
 
 #Let's label the columns of matrix d for easier reading
+
 colnames(d) <- c("Observed.DRINKING_D","Probability.DRINKING_D","Prob.Above.Cutoff")
 
 #Converting matrix to data frame

@@ -319,8 +319,8 @@ iterateThresholds <- function(data, observedClass, predictedProbs, group) {
                   Rate_FP = Count_FP / (Count_FP + Count_TN),
                   Rate_FN = Count_FN / (Count_FN + Count_TP),
                   Rate_TN = Count_TN / (Count_TN + Count_FP),
-                  Sensitivity = Count_TP / (Count_TP + Count_FP),
-                  Specificity = Count_TN / (Count_TN + Count_FN),
+                  Sensitivity = Count_TP / (Count_TP + Count_FN),
+                  Specificity = Count_TN / (Count_TN + Count_FP),
                   MissClass_Rate = (Count_FP + Count_FN)/(Count_FP + Count_FN + Count_TP + Count_TN), 
                   Accuracy = (Count_TP + Count_TN) / 
                     (Count_TP + Count_TN + Count_FN + Count_FP)) %>%
@@ -348,8 +348,8 @@ iterateThresholds <- function(data, observedClass, predictedProbs, group) {
                   Rate_FP = Count_FP / (Count_FP + Count_TN),
                   Rate_FN = Count_FN / (Count_FN + Count_TP),
                   Rate_TN = Count_TN / (Count_TN + Count_FP),
-                  Sensitivity = Count_TP / (Count_TP + Count_FP),
-                  Specificity = Count_TN / (Count_TN + Count_FN),
+                  Sensitivity = Count_TP / (Count_TP + Count_FN),
+                  Specificity = Count_TN / (Count_TN + Count_FP),
                   MissClass_Rate = (Count_FP + Count_FN)/(Count_FP + Count_FN + Count_TP + Count_TN),
                   Accuracy = (Count_TP + Count_TN) / 
                     (Count_TP + Count_TN + Count_FN + Count_FP)) %>%
@@ -381,21 +381,47 @@ colnames(b) <- c("Observed.DRINKING_D","Probability.DRINKING_D")
     #than or equal to 0.05 and 0 otherwise.
     
     #Other cut-offs can be used here!
-    c <- (b[,2] >= 0.05)
+    c <- (b[,2] == 0.02 | b[,2] == 0.03|b[,2] == 0.05|(b[,2] > 0.06 & b[,2] < 0.11)| b[,2] == 0.15 | b[,2] == 0.2 | b[,2] == 0.5)
     
+    c2<-(b[,2] == 0.02)
+    c3<-(b[,2] == 0.07)
     
     #Creating matrix d which merges matrixes b and c
-    d <- cbind(b,c)
+    d2 <- cbind(b,c2)
+    d3 <- cbind(b,c3)
     
     #Let's label the columns of matrix d for easier reading
-    colnames(d) <- c("Observed.DRINKING_D","Probability.DRINKING_D","Prob.Above.Cutoff")
+    colnames(d3) <- c("Observed.DRINKING_D","Probability.DRINKING_D","Prob.Above.Cutoff")
     
     #Converting matrix to data frame
-    e=as.data.frame(d)
+    e3=as.data.frame(d3)
+    e<-e%>%dplyr::mutate("f0.02" = ifelse(Probability.DRINKING_D >= 0.02, 1, 0), 
+                        "0.03" = ifelse(Probability.DRINKING_D >= 0.03, 1, 0), 
+                        "0.05" = ifelse(Probability.DRINKING_D >= 0.05, 1, 0), 
+                        "0.07" = ifelse(Probability.DRINKING_D >= 0.07, 1, 0), 
+                        "0.08" = ifelse(Probability.DRINKING_D >= 0.08, 1, 0),
+                        '0.09' = ifelse(Probability.DRINKING_D >= 0.09, 1, 0), 
+                        '0.10' = ifelse(Probability.DRINKING_D >= 0.10, 1, 0), 
+                        '0.15' = ifelse(Probability.DRINKING_D >= 0.15, 1, 0), 
+                        '0.20'= ifelse(Probability.DRINKING_D >= 0.20, 1, 0), 
+                        '0.50' = ifelse(Probability.DRINKING_D >= 0.50, 1, 0))
+    
+    TP <- e%>%mutate(Count_TN = sum(n["f0.02"==0 & !!"Observed.DRINKING_D"==0]))
+    ,
+                Count_TP = sum(n["0.02"==1 & !!"Observed.DRINKING_D"==1]),
+                Count_FN = sum(n["0.02"==0 & !!"Observed.DRINKING_D"==1]),
+                Count_FP = sum(n["0.02"==1 & !!"Observed.DRINKING_D"==0]))
+    table <- data.frame(TP = )
+    
+    
     e%>%kable()%>%kable_material_dark()
     
     #Cross-tabulation
-    CrossTable(e$Prob.Above.Cutoff, e$Observed.DRINKING_D, prop.r=FALSE,prop.chisq=FALSE, chisq=FALSE,prop.t=FALSE)
+    CrossTable(e3$Prob.Above.Cutoff, e$Observed.DRINKING_D, prop.r=FALSE,prop.chisq=FALSE, chisq=FALSE,prop.t=FALSE)
+    
+    37Sensitivity = Count_TP / (Count_TP + Count_FP),
+    Specificity = Count_TN / (Count_TN + Count_FN),
+    MissClass_Rate = (Count_FP + Count_FN)/(Count_FP + Count_FN + Count_TP + Count_TN), 
 # ----
 
 whichThreshold <- 
@@ -463,7 +489,7 @@ abline(a=0,b=1)
   #d = (x - 0)^2 + (y-1)^2
   #in the code below comes in.
 
-opt.cut = function(perf, pred){
+opt.cut=  function(perf, pred){
   cut.ind = mapply(FUN=function(x, y, p){
     d = (x - 0)^2 + (y-1)^2
     ind = which(d == min(d))
@@ -474,6 +500,15 @@ opt.cut = function(perf, pred){
 
   #This will print the optimal cut-off point and the corresponding
   #specificity and sensitivity 
+
+cut.ind = function(per, pred){mapply(FUN=function(x, y, p){
+  d = (x - 0)^2 + (y-1)^2
+  ind = which(d == min(d))
+  c(sensitivity = y[[ind]], specificity = 1-x[[ind]], 
+    cutoff = p[[ind]])
+})}
+
+opt.cut2(roc.perf, pred)
 
 print(opt.cut(roc.perf, pred))%>%kable(format = "html", align = "ll", caption = "Optimal Cutoff")%>%
   kable_material("hover")%>%kable_styling(full_width=F)%>%row_spec(3, bold=TRUE, background = "#f0d560")
@@ -534,3 +569,15 @@ rownames(aic) <- NULL
 aic%>%mutate(Model = c("Logit 1", "Logit 2"))%>% rename("Degrees of Freedom" = df)%>%
   dplyr::select(Model, "Degrees of Freedom", AIC)%>%kable(format = "html", align = "lll", caption = "AIC Results")%>%
   kable_paper("hover")%>%kable_styling(full_width=F)
+
+
+## Paul Allison q ---
+
+(20/1000)*100
+(200/10000)*100
+nrow(mydata[which(mydata$DRINKING_D == 0), ])/nrow(mydata[which(mydata$DRINKING_D == 1), ]) 
+
+(nrow(mydata[which(mydata$DRINKING_D == 1), ])/nrow(mydata))*100   
+nrow(mydata[which(mydata$DRINKING_D == 0), ])
+nrow(mydata)
+nrow(mydata[which(mydata$DRINKING_D == 1), ])     
